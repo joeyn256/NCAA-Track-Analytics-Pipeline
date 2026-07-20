@@ -130,7 +130,7 @@ def prepare_relative_score(frame: pd.DataFrame) -> pd.DataFrame:
 def ranking_controls(
     frame: pd.DataFrame,
     view_name: str,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, pd.DataFrame, bool]:
     frame = prepare_relative_score(frame)
 
     left, middle, right = st.columns(3)
@@ -206,6 +206,8 @@ def ranking_controls(
             filtered["ranking_label"] == selected_label
         ]
 
+    partition_frame = filtered.copy()
+
     st.markdown("#### Refine results")
     search_col, sample_col, official_col, sort_col = st.columns(
         [2.2, 1.2, 1.2, 1.5]
@@ -252,6 +254,25 @@ def ranking_controls(
             key=f"sort_{view_name}",
         )
 
+    evidence_values = sorted(
+        partition_frame.get(
+            "evidence_category",
+            pd.Series(dtype=str),
+        )
+        .dropna()
+        .unique()
+    )
+    if evidence_values:
+        selected_evidence = st.multiselect(
+            "Evidence categories",
+            evidence_values,
+            default=evidence_values,
+            key=f"evidence_{view_name}",
+        )
+        filtered = filtered[
+            filtered["evidence_category"].isin(selected_evidence)
+        ]
+
     if school_search:
         filtered = filtered[
             filtered["school_name"]
@@ -272,25 +293,6 @@ def ranking_controls(
     if official_only:
         filtered = filtered[official_mask(filtered)]
 
-    evidence_values = sorted(
-        filtered.get(
-            "evidence_category",
-            pd.Series(dtype=str),
-        )
-        .dropna()
-        .unique()
-    )
-    if evidence_values:
-        selected_evidence = st.multiselect(
-            "Evidence categories",
-            evidence_values,
-            default=evidence_values,
-            key=f"evidence_{view_name}",
-        )
-        filtered = filtered[
-            filtered["evidence_category"].isin(selected_evidence)
-        ]
-
     sort_column = sort_options[sort_label]
     ascending = sort_column == "official_rank"
     if sort_column in filtered.columns:
@@ -300,7 +302,7 @@ def ranking_controls(
             na_position="last",
         )
 
-    return filtered
+    return filtered, partition_frame, official_only
 
 
 def show_partition_warning(frame: pd.DataFrame) -> None:
@@ -321,9 +323,76 @@ def show_partition_warning(frame: pd.DataFrame) -> None:
         )
 
 
-def ranking_table(frame: pd.DataFrame) -> None:
+
+def show_empty_ranking_state(
+    partition_frame: pd.DataFrame,
+    official_only: bool,
+) -> None:
+    if partition_frame.empty:
+        st.info("No data exists for this season and ranking selection.")
+        return
+
+    variance_status = (
+        partition_frame["variance_status"].iloc[0]
+        if "variance_status" in partition_frame.columns
+        else None
+    )
+    official_count = int(official_mask(partition_frame).sum())
+    eligible_count = int(
+        partition_frame.get(
+            "sample_eligible",
+            pd.Series(False, index=partition_frame.index),
+        )
+        .fillna(False)
+        .sum()
+    )
+    minimum_sample = (
+        int(partition_frame["minimum_sample"].iloc[0])
+        if "minimum_sample" in partition_frame.columns
+        else None
+    )
+
+    if (
+        variance_status
+        == "no_detectable_between_school_variance"
+    ):
+        st.warning(
+            "No official ranking is published for this partition because "
+            "the model found no statistically detectable between-school "
+            "separation. Uncheck **Official ranks only** to inspect the "
+            "tied diagnostic rows."
+        )
+        return
+
+    if official_only and official_count == 0:
+        threshold_text = (
+            f" The minimum is {minimum_sample} athlete units per school."
+            if minimum_sample is not None
+            else ""
+        )
+        st.info(
+            "No school received an official rank in this partition."
+            f" {eligible_count} school(s) met the sample threshold."
+            f"{threshold_text} Uncheck **Official ranks only** to inspect "
+            "insufficient-data rows."
+        )
+        return
+
+    st.info(
+        "No rows match the school search, sample-size filter, or selected "
+        "evidence categories."
+    )
+
+def ranking_table(
+    frame: pd.DataFrame,
+    partition_frame: pd.DataFrame,
+    official_only: bool,
+) -> None:
     if frame.empty:
-        st.info("No rows match the selected filters.")
+        show_empty_ranking_state(
+            partition_frame,
+            official_only,
+        )
         return
 
     show_partition_warning(frame)
@@ -342,9 +411,9 @@ def ranking_table(frame: pd.DataFrame) -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Schools shown", represented_count)
     c2.metric("Official rows shown", official_count)
-    c3.metric("Athlete units", f"{athlete_total:,}")
+    c3.metric("Athlete units shown", f"{athlete_total:,}")
     c4.metric(
-        "Between-school variance",
+        "School variance",
         safe_number(between_variance, 4),
     )
 
@@ -356,6 +425,13 @@ def ranking_table(frame: pd.DataFrame) -> None:
             == "no_detectable_between_school_variance",
             "Rank",
         ] = pd.NA
+    frame["Rank"] = frame["Rank"].apply(
+        lambda value: (
+            "—"
+            if pd.isna(value)
+            else str(int(float(value)))
+        )
+    )
 
     frame["Season-relative score"] = frame[
         "season_centered_posterior_score"
@@ -386,11 +462,10 @@ def ranking_table(frame: pd.DataFrame) -> None:
         width="stretch",
         hide_index=True,
         column_config={
-            "Rank": st.column_config.NumberColumn(
-                format="%d",
+            "Rank": st.column_config.TextColumn(
                 help=(
-                    "Official rank. Blank when the partition has no "
-                    "detectable separation."
+                    "Official rank. An em dash means the school or "
+                    "partition is not officially ranked."
                 ),
             ),
             "Season-relative score": st.column_config.NumberColumn(
@@ -436,8 +511,15 @@ def rankings_page() -> None:
     )
 
     frame = load_csv(str(DATA_DIR / FILES[view_name]))
-    filtered = ranking_controls(frame, view_name)
-    ranking_table(filtered)
+    filtered, partition_frame, official_only = ranking_controls(
+        frame,
+        view_name,
+    )
+    ranking_table(
+        filtered,
+        partition_frame,
+        official_only,
+    )
 
 
 def school_profile_page() -> None:
