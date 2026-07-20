@@ -1,2 +1,4 @@
 streamlit
 pandas
+
+pytz>=2026.2

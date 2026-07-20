@@ -472,3 +472,55 @@ Relays and cross country are planned extensions rather than unfinished Milestone
 **Milestone 5 is complete.**
 
 The next phase will turn the analytical outputs into recruiter-friendly visualizations, interactive school profiles, and a public ranking explorer.
+
+<!-- MILESTONE_6_SUMMARY_START -->
+## Milestone 6 — Seasonal Development Rankings and Explorer
+
+**Status: Complete**
+
+Milestone 6 extends the frozen Milestone 5 athlete-development model into
+seasonal rankings, equal-event development-production rankings, elite cohorts,
+model diagnostics, and a Streamlit explorer.
+
+### Final model hierarchy
+
+- **Official primary:** Enhanced Balanced Production
+- **Balanced companion:** Original Balanced Production v4.1
+- **Efficiency companion:** Average Athlete Development
+
+The official model uses the original observed-minus-expected athlete signal,
+support reliability with `k=191`, a `100,000` positive budget for every
+publishable championship event, and a `100,000` negative event cap.
+
+```text
+Official athlete-point rows: 392,682
+Official school-event rows: 68,575
+Official event partitions: 449
+Official single-season combined rows: 13,882
+```
+
+Validation against Original v4.1 produced a `0.980708` rank correlation,
+`91.7%` top-10 overlap, and `94.0%` top-25 overlap.
+
+Matched elite testing showed greater credit for comparable high-baseline
+improvement in `97.9%` of matched cells. No additional elite multiplier is
+used.
+
+Run the explorer:
+
+```bash
+source .venv/bin/activate
+streamlit run src/apps/seasonal_development_explorer.py
+```
+
+Final publication:
+
+```text
+data/processed/milestone6/final_development_rankings_v1/
+└── phase_6g_final_publication/
+    └── final_development_rankings_v1.duckdb
+```
+
+See the Milestone 6 document in `milestones/` for full methodology,
+validation, outputs, and interpretation limits.
+<!-- MILESTONE_6_SUMMARY_END -->
