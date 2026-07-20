@@ -1,0 +1,83 @@
+season_type,canonical_gender_code,canonical_event_code,canonical_event_name,performance_count,athlete_count,school_count,source_candidate_count,ratified_candidate_count,pending_candidate_count,active_record_status,active_record_mark
+indoor,f,1000M,1000m,18538,7535,333,2,2,0,ratified_active_record,2:37.72
+indoor,f,1500M,1500m,969,740,171,3,3,0,ratified_active_record,4:01.60
+indoor,f,200M,200m,108556,21020,352,3,3,0,ratified_active_record,22.01
+indoor,f,3000M,3000m,73710,17481,362,3,3,0,ratified_active_record,8:31.39
+indoor,f,300M,300m,10062,6484,320,2,2,0,ratified_active_record,35.80
+indoor,f,400M,400m,83944,15925,353,2,2,0,ratified_active_record,49.24
+indoor,f,5000M,5000m,27902,9286,358,2,2,0,ratified_active_record,14:44.79
+indoor,f,500M,500m,14914,4796,261,3,3,0,ratified_active_record,1:08.40
+indoor,f,600M,600m,12275,6118,344,3,3,0,ratified_active_record,1:24.19
+indoor,f,60H,60m Hurdles,116383,9769,346,4,4,0,ratified_active_record,7.72
+indoor,f,60M,60m,124173,16614,349,7,7,0,ratified_active_record,6.94
+indoor,f,800M,800m,90203,20079,357,2,2,0,ratified_active_record,1:58.40
+indoor,f,HJ,High Jump,64797,7877,339,6,6,0,ratified_active_record,3
+indoor,f,LJ,Long Jump,89040,11685,345,3,3,0,ratified_active_record,7.03
+indoor,f,MILE,Mile,88095,20673,361,2,2,0,ratified_active_record,4:20.61
+indoor,f,PENT,Pentathlon,15217,4275,325,3,3,0,ratified_active_record,4746
+indoor,f,PV,Pole Vault,46971,4354,299,2,2,0,ratified_active_record,4.91
+indoor,f,SP,Shot Put,84968,10617,346,3,3,0,ratified_active_record,19.75
+indoor,f,TJ,Triple Jump,43783,5574,341,4,4,0,ratified_active_record,15.12
+indoor,f,WT,Weight Throw,70388,6411,326,2,2,0,ratified_active_record,25.56
+indoor,m,1000M,1000m,27467,9834,311,2,2,0,ratified_active_record,2:16.84
+indoor,m,1500M,1500m,1125,865,169,2,2,0,ratified_active_record,3:33.41
+indoor,m,200M,200m,79748,16577,310,2,2,0,ratified_active_record,19.95
+indoor,m,3000M,3000m,68362,16619,335,2,2,0,ratified_active_record,7:30.15
+indoor,m,300M,300m,7854,5219,273,2,2,0,ratified_active_record,31.99
+indoor,m,400M,400m,72348,14109,313,3,3,0,ratified_active_record,44.49
+indoor,m,5000M,5000m,28070,9444,328,2,2,0,ratified_active_record,12:57.14
+indoor,m,500M,500m,13974,4436,230,3,3,0,ratified_active_record,1:00.63
+indoor,m,600M,600m,10238,5121,293,2,2,0,ratified_active_record,1:14.67
+indoor,m,60H,60m Hurdles,84213,7165,299,2,2,0,ratified_active_record,7.32
+indoor,m,60M,60m,113685,16937,310,5,5,0,ratified_active_record,6.45
+indoor,m,800M,800m,66073,14066,327,2,2,0,ratified_active_record,1:44.70
+indoor,m,HEP,Heptathlon,10510,2934,259,3,3,0,ratified_active_record,6639
+indoor,m,HJ,High Jump,46093,6236,295,3,3,0,ratified_active_record,3
+indoor,m,LJ,Long Jump,64702,9511,304,2,2,0,ratified_active_record,8.59
+indoor,m,MILE,Mile,76384,18884,334,2,2,0,ratified_active_record,3:48.32
+indoor,m,PV,Pole Vault,46630,5667,281,5,5,0,ratified_active_record,6.00
+indoor,m,SP,Shot Put,68014,8259,297,2,2,0,ratified_active_record,21.85
+indoor,m,TJ,Triple Jump,30848,4497,298,3,3,0,ratified_active_record,17.54
+indoor,m,WT,Weight Throw,54196,5129,280,2,2,0,ratified_active_record,25.66
+outdoor,f,10000M,10000m,16639,5798,357,4,2,2,pending_used_as_active_record,30:46.80
+outdoor,f,100H,100m Hurdles,92453,8679,349,2,2,0,ratified_active_record,12.36
+outdoor,f,100M,100m,96892,15043,354,4,2,2,pending_used_as_active_record,10.63
+outdoor,f,1500M,1500m,119058,23355,362,2,2,0,ratified_active_record,3:59.90
+outdoor,f,200M,200m,124686,21907,357,5,3,2,pending_used_as_active_record,21.68
+outdoor,f,3000M,3000m,18468,9862,361,2,2,0,ratified_active_record,8:35.20
+outdoor,f,3000SC,3000m Steeplechase,29546,5323,358,3,3,0,ratified_active_record,8:58.15
+outdoor,f,400H,400m Hurdles,61160,6617,350,3,3,0,ratified_active_record,52.46
+outdoor,f,400M,400m,81986,15178,358,7,5,2,pending_used_as_active_record,48.79
+outdoor,f,5000M,5000m,63448,15557,361,2,2,0,ratified_active_record,14:44.79
+outdoor,f,800M,800m,113579,21587,361,4,2,2,pending_used_as_active_record,1:56.85
+outdoor,f,DT,Discus Throw,66860,5988,336,3,3,0,ratified_active_record,70.22
+outdoor,f,HEP,Heptathlon,11804,3349,324,4,4,0,ratified_active_record,6755
+outdoor,f,HJ,High Jump,60786,7207,344,7,7,0,ratified_active_record,3
+outdoor,f,HT,Hammer Throw,69393,6017,326,3,3,0,ratified_active_record,77.67
+outdoor,f,JT,Javelin Throw,66176,8240,341,3,3,0,ratified_active_record,64.19
+outdoor,f,LJ,Long Jump,84712,10953,348,2,2,0,ratified_active_record,7.14
+outdoor,f,MILE,Mile,2911,2333,253,4,4,0,ratified_active_record,4:23.46
+outdoor,f,PV,Pole Vault,47696,4327,300,2,2,0,ratified_active_record,4.91
+outdoor,f,SP,Shot Put,77174,9265,343,2,2,0,ratified_active_record,20.01
+outdoor,f,TJ,Triple Jump,44839,5380,344,3,3,0,ratified_active_record,15.12
+outdoor,m,10000M,10000m,18636,6350,332,4,4,0,ratified_active_record,26:50.21
+outdoor,m,100M,100m,92862,15386,318,2,2,0,ratified_active_record,9.82
+outdoor,m,110H,110m Hurdles,66133,6495,302,4,2,2,pending_used_as_active_record,12.75
+outdoor,m,1500M,1500m,113309,24416,337,5,3,2,ratified_active_record,3:31.04
+outdoor,m,200M,200m,85641,16569,320,4,2,2,pending_used_as_active_record,19.63
+outdoor,m,3000M,3000m,13747,8035,334,2,2,0,ratified_active_record,7:30.15
+outdoor,m,3000SC,3000m Steeplechase,30665,5578,332,5,3,2,ratified_active_record,8:05.4
+outdoor,m,400H,400m Hurdles,52108,5566,312,3,3,0,ratified_active_record,47.02
+outdoor,m,400M,400m,84640,16033,327,5,3,2,pending_used_as_active_record,43.38
+outdoor,m,5000M,5000m,63580,15789,336,2,2,0,ratified_active_record,12:57.14
+outdoor,m,800M,800m,95167,17095,337,4,4,0,ratified_active_record,1:41.77
+outdoor,m,DEC,Decathlon,9141,2616,264,3,3,0,ratified_active_record,8961
+outdoor,m,DT,Discus Throw,74470,8103,299,5,5,0,ratified_active_record,75.56
+outdoor,m,HJ,High Jump,44711,5913,298,2,2,0,ratified_active_record,2.38
+outdoor,m,HT,Hammer Throw,54625,4789,282,6,6,0,ratified_active_record,82.56
+outdoor,m,JT,Javelin Throw,50968,6501,301,3,3,0,ratified_active_record,89.10
+outdoor,m,LJ,Long Jump,63052,9159,310,3,3,0,ratified_active_record,8.74
+outdoor,m,MILE,Mile,3644,2796,265,2,2,0,ratified_active_record,3:48.32
+outdoor,m,PV,Pole Vault,44804,5382,283,8,8,0,ratified_active_record,6.00
+outdoor,m,SP,Shot Put,64427,7639,302,2,2,0,ratified_active_record,22.00
+outdoor,m,TJ,Triple Jump,32072,4369,301,3,3,0,ratified_active_record,17.87

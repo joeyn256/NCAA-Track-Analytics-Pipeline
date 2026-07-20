@@ -1,5 +1,45 @@
 # Milestone 3 Database Audit
 
+<!-- RECRUITER_SUMMARY_START -->
+## At a Glance
+
+**Status:** Complete
+
+### Executive Summary
+
+Independently validated the published DuckDB database in read-only mode. The audit reconciled source hashes and row counts, verified uniqueness and affiliation coverage, and confirmed that the production database contains no relational orphan records.
+
+### Headline Results
+
+| Metric | Final result |
+|---|---:|
+| Performance facts validated | 6,594,540 |
+| Performance chunks reconciled | 194 of 194 |
+| Parser-status chunks reconciled | 194 of 194 |
+| Registered source files | 1,105 |
+| Duplicate performance IDs | 0 |
+| Relational orphan records | 0 |
+| Mandatory checks | 35 passed |
+| Independent validation | **PASS** |
+
+### What This Milestone Demonstrates
+
+- independent read-only production validation;
+- source-to-database row-count reconciliation;
+- hash-based data lineage and immutability checks;
+- relational orphan and uniqueness testing;
+- separation between build logic and validation logic.
+
+### Related Documentation
+
+- [Construction and architecture](milestone_03_database_construction.md)
+- [Independent production audit](milestone_03_database_audit.md)
+
+[Previous: Milestone 3 construction](milestone_03_database_construction.md) · [Back to the milestone index](README.md) · [Next: Milestone 4](milestone_04_canonical_identity_and_school_stints.md)
+
+---
+<!-- RECRUITER_SUMMARY_END -->
+
 ## Result
 
 **Overall result: PASS**

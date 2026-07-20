@@ -1,0 +1,12 @@
+check_name,status,observed,expected,details
+all_required_inputs_exist,PASS,0,0,
+candidate_registry_has_rows,PASS,584,at least 100,
+requirement_registry_has_126_rows,PASS,126,126,
+every_official_scoring_event_has_one_anchor,PASS,82,82,
+active_anchor_keys_are_unique,PASS,0,0,
+unsupported_55m_events_removed,PASS,0,0,
+mens_indoor_heptathlon_included,PASS,True,True,
+indoor_1500_included_for_both_genders,PASS,2,2,
+outdoor_mile_included_for_both_genders,PASS,2,2,
+pending_marks_can_be_active,PASS,8,greater than 0,
+all_inputs_unchanged,PASS,"{'record_candidates': '42bc52d38c9cf35c76c3083241f6e805bcd0e5b82d53331fb6270691ba818f3b', 'record_requirements': '3b316177170ae53aee77342cfb0b7ec1572e3655e877289c87892aa8c053923d', 'source_manifest': '17f743a6beffe6d1c6ea7259c4afedaa4d72f461a72802200c825cefa01328ad'}","{'record_candidates': '42bc52d38c9cf35c76c3083241f6e805bcd0e5b82d53331fb6270691ba818f3b', 'record_requirements': '3b316177170ae53aee77342cfb0b7ec1572e3655e877289c87892aa8c053923d', 'source_manifest': '17f743a6beffe6d1c6ea7259c4afedaa4d72f461a72802200c825cefa01328ad'}",

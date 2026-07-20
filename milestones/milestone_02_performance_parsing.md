@@ -1,5 +1,40 @@
 # Milestone 2 — Athlete Performance Parsing Pipeline
 
+<!-- RECRUITER_SUMMARY_START -->
+## At a Glance
+
+**Status:** Complete
+
+### Executive Summary
+
+Transformed locally collected athlete HTML into a structured, audited performance dataset. The parser preserved source values and provenance while processing millions of records in resumable chunks with deterministic performance identifiers.
+
+### Headline Results
+
+| Metric | Final result |
+|---|---:|
+| Athlete pages processed | 193,954 |
+| Athletes with performances | 172,204 |
+| Pages with no meet results | 21,750 |
+| Unique performance records | 6,594,540 |
+| Performance chunks | 194 |
+| Parser failures | 0 |
+| Duplicate performance IDs | 0 |
+| Final audit | **PASS** |
+
+### What This Milestone Demonstrates
+
+- parsing heterogeneous historical HTML at production scale;
+- chunked and resumable processing of millions of records;
+- deterministic record identifiers and source provenance;
+- duplicate analysis without discarding meaningful source values;
+- zero-failure production auditing.
+
+[Previous: Milestone 1](milestone_01_data_collection.md) · [Back to the milestone index](README.md) · [Next: Milestone 3](milestone_03_database_construction.md)
+
+---
+<!-- RECRUITER_SUMMARY_END -->
+
 ---
 
 ## Overview
@@ -600,22 +635,9 @@ The athlete performance parsing pipeline has passed its final production audit.
 
 ---
 
-# Next Milestone
+## Final Status
 
-## Milestone 3 — Relational Database Construction
+**Milestone 2 is complete.**
 
-The next phase will transform performance chunks and historical roster data into a normalized relational database.
-
-Planned objectives:
-
-- [ ] Design the relational schema
-- [ ] Create athlete, school, team, season, meet, event, and performance tables
-- [ ] Normalize historical athlete-school affiliations
-- [ ] Parse competition dates into standardized date fields
-- [ ] Normalize running times into seconds
-- [ ] Normalize field-event marks into metric values
-- [ ] Preserve original raw source values
-- [ ] Create primary and foreign keys
-- [ ] Add indexes for analytical queries
-- [ ] Load all performance chunks
-- [ ] Validate database row counts and relationships
+The parser produced the audited 6,594,540-record source performance
+dataset used to construct the relational warehouse.

@@ -1,0 +1,5 @@
+season_type,canonical_gender_code,canonical_event_code,performance_count,ratified_main_candidate_count,pending_main_candidate_count,active_candidate_selected,coverage_status
+indoor,f,55H,6819,0,0,False,manual_anchor_policy_required
+indoor,f,55M,8441,0,0,False,manual_anchor_policy_required
+indoor,m,55H,5269,0,0,False,manual_anchor_policy_required
+indoor,m,55M,7586,0,0,False,manual_anchor_policy_required

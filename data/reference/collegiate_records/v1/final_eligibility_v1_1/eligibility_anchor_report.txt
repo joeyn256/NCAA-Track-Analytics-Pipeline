@@ -1,0 +1,21 @@
+MILESTONE 5 PHASE 3D-S — ELIGIBILITY ANCHOR METADATA
+==============================================================================
+Finished UTC: 2026-07-19T17:45:59+00:00
+Registry version: collegiate_eligibility_anchors_v1_1
+Policy version: tfn_regular_plus_explicit_verified_postseason_pending_active_v1
+
+RESULTS
+------------------------------------------------------------------------------
+Active anchors: 82
+Pending active anchors: 8
+Explicit verified outside-season anchors: 5
+
+POLICY
+------------------------------------------------------------------------------
+Selected marks were not changed.
+Five T&FN eligibility-screened outside-season marks were tagged.
+Ordinary performance attribution still requires school-stint checks.
+
+PHASE GATE
+------------------------------------------------------------------------------
+PASS — Authoritative anchor registry frozen.

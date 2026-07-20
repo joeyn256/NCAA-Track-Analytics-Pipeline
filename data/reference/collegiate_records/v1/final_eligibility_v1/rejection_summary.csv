@@ -1,0 +1,5 @@
+rejection_reason,candidate_count
+reject_fallback_parser,401
+reject_implausible_event_mark,10
+reject_non_individual_section,16
+reject_secondary_sublisting,37

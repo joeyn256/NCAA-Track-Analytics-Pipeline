@@ -1,0 +1,21 @@
+MILESTONE 5 PHASE 3D-R — COLLEGIATE-ELIGIBILITY ANCHORS
+==============================================================================
+Started UTC: 2026-07-19T17:33:53+00:00
+Registry version: collegiate_eligibility_anchors_v1
+Policy version: tfn_regular_plus_verified_postseason_pending_active_v1
+Output: /Users/joeyn256/Projects/NCAA Track Analytics Pipeline/data/reference/collegiate_records/v1/final_eligibility_v1
+
+Accepted unique source candidates: 120
+Rejected candidates: 464
+Official scoring anchors: 82
+Pending marks promoted: 8
+Outside-season marks promoted: 0
+Official-event performance coverage: 99.290504%
+
+PHASE GATE: FAIL
+  verified_outside_anchor_count: observed=0 expected=5
+  sentinel_outdoor_m_800M: observed=1:41.77|False|False expected=1:41.77|False|True
+  sentinel_outdoor_m_1500M: observed=3:31.04|False|False expected=3:31.04|False|True
+  sentinel_outdoor_m_HT: observed=82.56|False|False expected=82.56|False|True
+  sentinel_outdoor_f_HJ: observed=2.03|False|False expected=2.03|False|True
+  sentinel_outdoor_f_HEP: observed=6755|False|False expected=6755|False|True
