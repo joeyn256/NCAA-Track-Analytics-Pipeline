@@ -1,209 +1,402 @@
-# Milestone 6 — Seasonal Rankings and Exploratory Analytics
+# Milestone 6 — Seasonal Development Rankings and Explorer
 
 ## Status
 
-**In Progress**
+**Complete**
 
 ## Objective
 
-Extend the frozen Milestone 5 athlete-development model into season-by-season
-analytical products and recruiter-friendly visualizations.
+Extend the frozen Milestone 5 athlete-development model into:
 
-The first goal is to publish rankings for every available indoor and outdoor
-endpoint season, such as:
+- season-by-season NCAA Division I development rankings;
+- event-balanced development-production rankings;
+- broad, frontier, elite, national-elite, and championship-caliber cohorts;
+- final model validation and sensitivity testing;
+- a local Streamlit ranking explorer;
+- one frozen final Milestone 6 publication.
 
-- 2024 Indoor
-- 2024 Outdoor
-- 2025 Indoor
-- 2025 Outdoor
-- 2026 Indoor
-- 2026 Outdoor, when represented in the frozen trajectory data
-
-The rankings reuse the validated Milestone 5 value-added scores rather than
-creating a second development model.
+Milestone 6 preserves the validated Milestone 5 value-added model. It does
+not replace the original athlete-development calculation with a separate
+unrelated model.
 
 ---
 
-## Phase 6A — Season-by-Season Development Rankings
+## Final model hierarchy
+
+### Official primary model
+
+**Enhanced Balanced Production**
+
+This answers:
+
+> How much reliable athlete development did a program produce?
+
+The official model uses:
+
+```text
+original athlete value added
+× support reliability
+→ equal positive event pools
+→ bounded negative event pools
+→ athlete contributions summed to schools
+```
+
+Parameters:
+
+```text
+support reliability = sqrt(n / (n + 191))
+positive event budget = 100,000
+positive group budget = 100,000
+negative event cap = 100,000
+extra elite multiplier = none
+```
+
+The original athlete signal remains:
+
+```text
+observed improvement
+− cross-fitted expected improvement
+```
+
+### Balanced-production companion
+
+**Original Balanced Production v4.1**
+
+This preserves the exact validated Phase 6D v4.1 formula:
+
+- no support-reliability adjustment;
+- 100,000 positive points per publishable event;
+- uncapped linear negative points;
+- athlete-school-event contributions summed to schools.
+
+### Efficiency companion
+
+**Average Athlete Development**
+
+This answers:
+
+> How well did the typical athlete develop?
+
+Two time views are retained:
+
+- **All Time — Frozen Milestone 5**
+- **Single Season — Milestone 6**
+
+The frozen all-time overall ranking remains led by Air Force, LSU, and
+Kentucky.
+
+---
+
+## Phase 6A — Seasonal Average-Development Rankings
 
 ### Season definition
 
 A ranking labeled `2025 Indoor` includes development trajectories whose
 endpoint stable period is the 2025 indoor season.
 
-This measures development realized by that endpoint season. It is not
-described as a randomized causal estimate or as a strict one-calendar-year
+The season label represents when development was realized. It is not a
+randomized causal estimate and is not necessarily a strict one-calendar-year
 change.
 
-### Published ranking scopes
+### Published scopes
 
-1. Combined-gender overall rankings
-2. Men's overall rankings
-3. Women's overall rankings
-4. Gender-specific individual-event rankings
-5. Combined-gender individual-event rankings
-6. Gender-specific event-group rankings
-7. Combined-gender event-group rankings
+1. Combined overall
+2. Men's overall
+3. Women's overall
+4. Gender-specific individual event
+5. Combined-gender individual event
+6. Gender-specific coaching group
+7. Combined-gender coaching group
 
-### Athlete weighting
-
-#### Overall rankings
-
-1. Average trajectories within athlete, school, endpoint season, and event
-   family.
-2. Average event families within the athlete-school-season.
-3. Give each athlete-school-season one total vote.
-
-#### Individual-event rankings
-
-Each athlete receives one vote per:
+### Completed results
 
 ```text
-school
-× endpoint season
-× gender
-× canonical event
+Endpoint seasons: 40
+Endpoint years: 2007–2026
+Season-athlete units: 141,635
+Season-event units: 189,703
+Season-group units: 219,278
+Official ranking rows: 10,336
 ```
 
-Repeated same-school analytical stints are consolidated.
+The Phase 6A gate passed with frozen Milestone 5 inputs, unchanged input
+hashes, unique contribution identifiers, valid posterior scores and
+confidence intervals, threshold reconciliation, at least five eligible
+schools per published partition, and versioned outputs.
 
-#### Event-group rankings
+---
 
-Individual-event values are averaged within the athlete-school-season-group.
+## Phase 6B — Development Cohorts
 
-A 100m/200m/400m athlete therefore receives one total sprint-group vote rather
-than three independent votes.
+Milestone 6 expanded the seasonal rankings into five cohorts:
 
-### Ranking model
+| Cohort | Definition |
+|---|---|
+| Broad | All eligible athletes |
+| Frontier | Baseline level 70+ |
+| Elite | Baseline level 80+ |
+| National Elite Finishers | Endpoint level 90+ |
+| Championship-Caliber Finishers | Endpoint level 95+ |
 
-Phase 6A reuses the Milestone 5 uncertainty model:
+The cohorts use the same underlying development model and publication gates.
 
-- stabilized within-school variance;
-- 20-degree-of-freedom pooled variance prior;
-- method-of-moments between-school variance;
-- empirical-Bayes posterior score;
-- 95% posterior interval;
-- minimum school sample;
-- at least five eligible schools per ranking partition.
+---
 
-### Minimum samples
+## Phase 6C — Event-Fairness Audit
 
-| Scope | Minimum athlete units per school |
-|---|---:|
-| Combined overall | 15 |
-| Men's or women's overall | 10 |
-| Gender-specific event | 5 |
-| Combined-gender event | 8 |
-| Gender-specific core group | 8 |
-| Gender-specific special group | 5 |
-| Combined-gender core group | 12 |
-| Combined-gender special group | 8 |
+The initial model gave high-volume events substantially more total influence.
 
-Schools below the threshold remain visible as insufficient-data rows.
-
-### Event taxonomy
-
-Phase 6A imports the frozen Milestone 5 taxonomy:
-
-- 30 canonical individual events;
-- 10 coaching-oriented event groups;
-- no relay or cross-country scoring;
-- no duplicate Track or Endurance umbrella groups.
-
-### Planned Phase 6A outputs
+Examples from the audit:
 
 ```text
-season_coverage_summary.csv
-season_overall_rankings.csv
-season_gender_rankings.csv
-season_individual_event_rankings.csv
-season_combined_gender_event_rankings.csv
-season_event_group_rankings.csv
-season_combined_gender_group_rankings.csv
-season_partition_summary.csv
-season_ranking_leaders.csv
-seasonal_ranking_methodology.csv
-seasonal_development_rankings_v1.duckdb
+800m influence: approximately 15,307
+400m influence: approximately 12,135
+200m influence: approximately 10,139
+10,000m influence: approximately 789
+combined events: approximately 52–108
+```
+
+Direct trajectory-count reweighting was rejected because it changed rankings
+too aggressively. The final policy instead gives every publishable
+championship event an equal positive opportunity before school aggregation.
+
+---
+
+## Phase 6D — Athlete-Level Event-Balanced Points
+
+### Analytical unit
+
+```text
+athlete × school × event × ranking period
+```
+
+Multiple eligible trajectories for the same athlete-school-event unit are
+averaged before point allocation.
+
+For every publishable event partition:
+
+```text
+positive event pool = 100,000
+```
+
+Regression receives separate negative points and does not consume the positive
+pool.
+
+Completed results:
+
+```text
+Athlete-point rows: 392,682
+School-event rows: 68,575
+Event partitions: 449
+Negative athlete rows: 193,725
+Group partitions: 401
+Single-season combined rows: 13,882
+```
+
+All positive event and group budgets reconcile to 100,000. School-event totals
+reconcile to athlete contributions. There is no top-eight cutoff.
+
+---
+
+## Phase 6E — Enhanced and Original Model Variants
+
+Two balanced-production formulas were published together:
+
+1. Enhanced Balanced Production
+2. Original Balanced Production v4.1
+
+Enhancements added empirical support reliability, a bounded negative event
+pool, concentration diagnostics, roster-size diagnostics, elite reward
+diagnostics, and model comparisons.
+
+```text
+Athlete-model rows: 785,364
+Event-model partitions: 898
+Enhanced capped negative partitions: 171
+Mean enhanced/original rank correlation: 0.980486
+```
+
+Original v4.1 was reproduced to numerical tolerance.
+
+---
+
+## Phase 6F — Final Model Validation
+
+Ten controlled variants tested support values `k = 0, 50, 100, 191, 300,
+500`, negative caps of `0.5×`, `1.0×`, and `1.5×`, uncapped negative points,
+and exact Original v4.1 behavior.
+
+Final evidence:
+
+```text
+Enhanced versus Original v4.1 rank correlation: 0.980708
+Mean top-10 overlap: 0.917
+Mean top-25 overlap: 0.940
+P95 largest-athlete share: 0.3041
+Mean effective positive athletes: 260.98
+Mean absolute roster correlation: 0.2412
+Mean positive-athlete-count correlation: 0.6007
+Matched nonnegative elite slope share: 0.950
+Matched elite advantage share: 0.979
+Median matched elite advantage: 0.5821
+```
+
+Matched elite testing compared athletes within the same gender, event, and
+similar observed-improvement range. No additional elite multiplier was added.
+
+---
+
+## Phase 6G — Final Freeze and Publication
+
+The final publication passed all hard checks.
+
+```text
+Official athlete-point rows: 392,682
+Official school-event rows: 68,575
+Official event partitions: 449
+Official single-season combined rows: 13,882
+```
+
+Frozen model:
+
+```text
+Primary model: Enhanced Balanced Production
+Support k: 191
+Positive event budget: 100,000
+Negative event cap: 100,000
+Extra elite multiplier: none
+```
+
+Latest broad leaders:
+
+### 2026 Indoor
+
+| Rank | School | Net points |
+|---:|---|---:|
+| 1 | Charlotte | 11,775.98 |
+| 2 | Navy | 11,728.34 |
+| 3 | Montana State | 11,719.40 |
+
+### 2026 Outdoor
+
+| Rank | School | Net points |
+|---:|---|---:|
+| 1 | Air Force | 13,132.29 |
+| 2 | UC Santa Barbara | 11,939.57 |
+| 3 | Montana | 11,199.94 |
+
+---
+
+## Explorer
+
+Run:
+
+```bash
+source .venv/bin/activate
+streamlit run src/apps/seasonal_development_explorer.py
+```
+
+Pages:
+
+- Event-Balanced Points
+- Model Diagnostics
+- Average Development
+- School Profile
+- Season Coverage
+- Methodology
+
+The explorer preserves Enhanced Balanced Production, Original v4.1, the
+frozen all-time Average Athlete Development ranking, and seasonal
+Average Athlete Development rankings.
+
+---
+
+## Event taxonomy
+
+- Individual NCAA championship events
+- 10 coaching-oriented groups
+- Steeplechase belongs to Distance
+- No standalone steeplechase group
+- 500m, 600m, and 1000m excluded from the primary championship ranking
+- Relays and cross-country excluded from individual athlete-development scoring
+
+---
+
+## Final output
+
+```text
+data/processed/milestone6/
+└── final_development_rankings_v1/
+    └── phase_6g_final_publication/
+        ├── final_development_rankings_v1.duckdb
+        ├── final_model_decision.csv
+        ├── final_model_scorecard.csv
+        ├── model_registry.csv
+        ├── athlete_model_points.csv
+        ├── event_balanced_point_rows.csv
+        ├── event_balanced_overall_gender.csv
+        ├── event_balanced_overall_combined.csv
+        ├── group_balanced_points_gender.csv
+        ├── group_balanced_points_combined.csv
+        ├── group_balanced_overall_gender.csv
+        ├── group_balanced_overall_combined.csv
+        ├── average_development_seasonal_rankings.csv
+        ├── average_development_elite_rankings.csv
+        ├── official_season_overall_gender.csv
+        ├── official_season_overall_combined.csv
+        ├── hard_checks.csv
+        ├── input_manifest.csv
+        ├── phase_6g_report.txt
+        └── terminal_output.txt
 ```
 
 ---
 
-## Phase 6B — Seasonal Trend Analysis
+## Interpretation
 
-After Phase 6A passes:
+**Enhanced Balanced Production** measures reliable total development
+production. It reflects both development quality and breadth.
 
-- identify programs rising or falling over time;
-- measure year-to-year rank movement;
-- calculate multi-season consistency;
-- compare indoor and outdoor development;
-- identify event-group trend leaders;
-- flag large changes driven by small samples;
-- separate posterior score movement from rank movement.
+**Original Balanced Production v4.1** preserves the exact original
+athlete-level balanced formula.
 
----
-
-## Phase 6C — Recruiter-Friendly Visualizations
-
-Planned visual products:
-
-- overall ranking table;
-- school score and interval chart;
-- school development trend chart;
-- event-group heatmap;
-- men's-versus-women's comparison;
-- baseline-tier profile;
-- robustness profile;
-- season-over-season rank movement;
-- program comparison view.
+**Average Athlete Development** measures how well the typical athlete
+developed and is the preferred efficiency-oriented companion.
 
 ---
 
-## Phase 6D — Public Ranking Explorer
+## Limitations
 
-Potential implementation:
-
-- Streamlit or similar Python application;
-- school, season, gender, event, and group filters;
-- uncertainty intervals visible by default;
-- links back to methodology;
-- downloadable filtered tables;
-- local-first deployment with a public demo option.
-
----
-
-## Validation requirements
-
-Phase 6A is complete only when:
-
-- all Milestone 5 input gates pass;
-- source database hashes remain unchanged;
-- all available indoor and outdoor endpoint seasons are registered;
-- contribution identifiers are unique;
-- posterior scores remain between the raw score and global mean;
-- confidence intervals are valid;
-- official eligibility reconciles with thresholds;
-- every published partition contains at least five eligible schools;
-- all generated files are versioned and registered in a manifest.
+- Rankings are observational, not randomized causal estimates.
+- A season refers to the trajectory endpoint season.
+- Trajectories can span more than one year.
+- Early seasons can have lower coverage.
+- Sparse elite cohorts can be concentrated.
+- Athlete points are allocated inside separate event pools.
+- Relays and cross-country are excluded.
+- Production rankings intentionally reflect quality and breadth.
+- Average Athlete Development should accompany comparisons of differently
+  sized programs.
 
 ---
 
-## Interpretation limits
+## Dependencies
 
-Seasonal rankings inherit the Milestone 5 limitations.
+Phase 6G CSV export requires:
 
-Additional seasonal limitations:
-
-- the season label refers to the trajectory endpoint season;
-- trajectories can span more than one year;
-- early seasons may have lower coverage;
-- smaller event partitions may shrink to ties;
-- rankings are observational and should retain uncertainty intervals.
-
-A later extension may construct true consecutive-season transition rankings
-after separately validating and freezing that modeling grain.
+```text
+pytz>=2026.2
+```
 
 ---
 
-## Current phase
+## Completion gate
 
-**Phase 6A — Season-by-Season Development Rankings**
+Milestone 6 is complete because all upstream model gates passed, hashes stayed
+unchanged, seasonal products were published, event and group budgets
+reconciled, negative caps were respected, athlete contributions reconciled to
+school totals, companion models were preserved, sensitivity and matched elite
+testing passed, final parameters were frozen, the publication gate passed,
+and the Streamlit explorer reads the frozen publication.
+
+**Milestone 6 status: COMPLETE**
