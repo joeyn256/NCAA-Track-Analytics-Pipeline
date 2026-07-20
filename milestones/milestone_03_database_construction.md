@@ -1,18 +1,52 @@
 # Milestone 3 — Relational Database Construction
 
+<!-- RECRUITER_SUMMARY_START -->
+## At a Glance
+
+**Status:** Complete
+
+### Executive Summary
+
+Converted the audited flat-file collection into a reproducible DuckDB analytical warehouse with relational dimensions, facts, historical roster affiliations, source manifests, and an audit schema. Publication is transactional: the final database is released only after mandatory integrity checks pass.
+
+### Headline Results
+
+| Metric | Final result |
+|---|---:|
+| Database size | 703,868,928 bytes |
+| Performance facts | 6,594,540 |
+| Historical affiliations | 990,681 |
+| Athletes | 193,961 |
+| Teams | 973 |
+| Institutions | 554 |
+| Meets | 32,416 |
+| Mandatory integrity checks | 35 passed |
+
+### What This Milestone Demonstrates
+
+- relational and dimensional schema design;
+- DuckDB and SQL implementation at multi-million-row scale;
+- transactional staging and atomic publication;
+- source-file registration with SHA-256 lineage;
+- separation of source-faithful, analytical, and audit schemas.
+
+### Related Documentation
+
+- [Construction and architecture](milestone_03_database_construction.md)
+- [Independent production audit](milestone_03_database_audit.md)
+
+[Previous: Milestone 2](milestone_02_performance_parsing.md) · [Back to the milestone index](README.md) · [Next: Milestone 4](milestone_04_canonical_identity_and_school_stints.md)
+
 ---
-
-## Status
-
-**🔄 In Progress**
+<!-- RECRUITER_SUMMARY_END -->
 
 ---
 
 ## Overview
 
-Milestone 3 will transform the raw and processed NCAA Division I Track & Field and Cross Country datasets into a structured analytical database.
+Milestone 3 transformed the raw and processed NCAA Division I Track & Field and Cross Country datasets into a structured analytical database.
 
-The database will connect:
+The database connects:
 
 - Athletes
 - Schools
@@ -25,15 +59,15 @@ The database will connect:
 - Source files
 - Pipeline audit records
 
-The primary database engine will be **DuckDB**.
+The primary database engine is **DuckDB**.
 
-The completed database will support efficient SQL analysis while preserving the original raw values and source references collected during Milestones 1 and 2.
+The completed database supports efficient SQL analysis while preserving the original raw values and source references collected during Milestones 1 and 2.
 
 ---
 
 ## Starting Dataset
 
-The database will be constructed from the completed and audited outputs of the first two milestones.
+The database was constructed from the completed and audited outputs of the first two milestones.
 
 ### Historical Collection Data
 
@@ -74,21 +108,21 @@ Build a reproducible relational database that:
 
 ## Database Engine
 
-The database will use:
+The database uses:
 
 ```text
 DuckDB
 ```
 
-The local database file will be:
+The local database file is:
 
 ```text
 data/database/ncaa_track.duckdb
 ```
 
-The database file will not be uploaded to GitHub.
+The database file is not uploaded to GitHub.
 
-The repository will contain:
+The repository contains:
 
 - Database-building Python scripts
 - SQL schema files
@@ -989,20 +1023,13 @@ The database will serve as the foundation for:
 
 ---
 
-## Next Milestone
+## Final Status
 
-### Milestone 4 — Data Cleaning and Feature Engineering
+**Milestone 3 database construction is complete.**
 
-Planned work will include:
+The published source warehouse remains the immutable relational
+foundation for Milestones 4 and 5.
 
-- Standardizing event names
-- Converting race times to seconds
-- Converting field-event marks to metric units
-- Creating season-best and personal-best records
-- Deriving athlete progression measures
-- Building modeling-ready feature tables
-
-<!-- MILESTONE_03_COMPLETION_START -->
 ## Milestone 3 completion
 
 **Status: COMPLETE — PASS**

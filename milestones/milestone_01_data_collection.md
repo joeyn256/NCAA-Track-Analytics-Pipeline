@@ -1,5 +1,40 @@
 # Milestone 1 — Historical NCAA Division I Data Collection Pipeline
 
+<!-- RECRUITER_SUMMARY_START -->
+## At a Glance
+
+**Status:** Complete
+
+### Executive Summary
+
+Built the historical NCAA Division I collection layer: program discovery, season discovery, roster collection, athlete-profile collection, retry handling, and source-level audit controls. This milestone created the raw historical evidence used by every later database and modeling phase.
+
+### Headline Results
+
+| Metric | Final result |
+|---|---:|
+| NCAA Division I team entries | 714 |
+| Historical roster files | 34,334 |
+| Historical roster records | 992,774 |
+| Source athlete profiles | 193,961 |
+| Athlete pages collected | 193,954 |
+| Confirmed unavailable pages | 7 |
+| Collection success rate | 99.9964% |
+| Final audit | **PASS** |
+
+### What This Milestone Demonstrates
+
+- large-scale and resilient web scraping;
+- adaptive request pacing, retries, and failure handling;
+- resumable collection and checkpoint design;
+- deterministic source manifests and file organization;
+- production validation across nearly 200,000 athlete pages.
+
+[Back to the milestone index](README.md) · [Next: Milestone 2](milestone_02_performance_parsing.md)
+
+---
+<!-- RECRUITER_SUMMARY_END -->
+
 ---
 
 ## Overview
@@ -410,23 +445,10 @@ Historical NCAA Division I data collection has been successfully completed.
 
 ---
 
-# Next Milestone
+## Final Status
 
-## Milestone 2 — Athlete Performance Parser
+**Milestone 1 is complete.**
 
-The next phase will transform downloaded athlete HTML pages into structured performance records.
-
-Planned objectives:
-
-- [ ] Parse athlete identity
-- [ ] Parse meet names
-- [ ] Parse competition dates
-- [ ] Parse event names
-- [ ] Parse marks and times
-- [ ] Parse placements
-- [ ] Parse wind readings
-- [ ] Classify indoor, outdoor, and cross-country performances
-- [ ] Generate one structured record per performance
-- [ ] Save cleaned data into `data/processed/`
-
-The resulting dataset will become the foundation for the relational database, statistical analyses, and predictive machine learning models.
+The collection layer supplied the historical roster and athlete-profile
+evidence used by the parser, warehouse, identity, attribution, and
+modeling milestones.

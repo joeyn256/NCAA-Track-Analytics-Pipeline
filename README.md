@@ -62,6 +62,19 @@ The project also publishes rankings for **30 individual events**, men’s and wo
 
 ---
 
+<!-- TECHNICAL_DOCUMENTATION_START -->
+## Technical Documentation
+
+The root README is the project overview. Detailed engineering,
+attribution, modeling, and validation evidence is organized in the
+[milestone documentation index](milestones/README.md).
+
+Recommended technical deep dives:
+
+- [Milestone 4 — Canonical Athlete Identity and D1 School Stints](milestones/milestone_04_canonical_identity_and_school_stints.md)
+- [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
+<!-- TECHNICAL_DOCUMENTATION_END -->
+
 ## Core Methodology
 
 The central metric is:
@@ -313,6 +326,7 @@ NCAA Track Analytics Pipeline/
 │   └── reference/
 │       └── collegiate_records/
 ├── milestones/
+│   ├── README.md
 │   ├── milestone_01_data_collection.md
 │   ├── milestone_02_performance_parsing.md
 │   ├── milestone_03_database_construction.md

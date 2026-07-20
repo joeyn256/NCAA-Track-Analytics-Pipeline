@@ -1,18 +1,43 @@
 # Milestone 4 — Canonical Athlete Identity and D1 School Stints
 
-## Status
+<!-- RECRUITER_SUMMARY_START -->
+## At a Glance
 
-**Complete**
+**Status:** Complete
 
-Milestone 4 created the validated analytical foundation required to measure
-athlete development by school.
+### Executive Summary
 
-The final system resolves duplicate athlete profiles, deduplicates repeated
-performances, assigns every eligible performance to a canonical person, and
-maps each performance to exactly one chronological NCAA Division I school
-stint.
+Resolved duplicate athlete profiles, transfer histories, stale profile-school labels, repeated performances, and conflicting team assignments. Every eligible canonical performance is mapped to one chronological Division I school stint while preserving full source-to-canonical provenance.
+
+### Headline Results
+
+| Metric | Final result |
+|---|---:|
+| Canonical people | 192,561 |
+| Profiles in merged identity components | 2,752 |
+| Deduplicated canonical performances | 6,376,667 |
+| Analytical duplicate rows removed | 97,871 |
+| Person-performance conflicts resolved | 35,694 |
+| Final D1 school stints | 174,429 |
+| Performances mapped to stints | 6,376,505 |
+| Remaining unresolved conflicts | 0 |
+
+### What This Milestone Demonstrates
+
+- entity resolution and graph-based identity consolidation;
+- transfer-aware temporal attribution;
+- provenance-preserving analytical deduplication;
+- conflict-resolution registries and evidence hierarchies;
+- chronological reconstruction with explicit exception review.
+
+### Project Evolution
+
+The original roadmap grouped cleaning and feature engineering into one broad phase. Source investigation showed that athlete identity and historical school attribution had to be solved first. Milestone 4 was therefore redefined as the canonical identity and school-stint foundation, preventing later rankings from crediting performances to the wrong athlete or institution.
+
+[Previous: Milestone 3 audit](milestone_03_database_audit.md) · [Back to the milestone index](README.md) · [Next: Milestone 5](milestone_05_athlete_development_rankings.md)
 
 ---
+<!-- RECRUITER_SUMMARY_END -->
 
 ## Final analytical outputs
 
@@ -270,18 +295,10 @@ finalize_school_stints.py
 
 ---
 
-## Next milestone
+## Final Status
 
-Milestone 5 will build the athlete-development model.
+**Milestone 4 is complete.**
 
-Initial work will include:
-
-- event-name normalization;
-- valid-mark parsing;
-- event-family classification;
-- comparable-performance selection;
-- baseline and endpoint definitions;
-- event-specific performance scaling;
-- human-limit-aware improvement scoring;
-- athlete-level development scores;
-- D1 school rankings.
+The project can identify the canonical athlete, historical school, and
+chronological school stint responsible for every eligible performance.
+This layer directly supports the Milestone 5 development rankings.
