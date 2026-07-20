@@ -1,0 +1,9 @@
+source_key,parser_method,logical_row_count,accepted_candidate_count
+men_absolute,table,82,47
+men_absolute,fallback,109,109
+women_absolute,table,81,61
+women_absolute,fallback,126,120
+men_indoor,table,53,35
+men_indoor,fallback,85,83
+women_indoor,table,58,40
+women_indoor,fallback,93,89

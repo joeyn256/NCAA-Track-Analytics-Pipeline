@@ -1,0 +1,7 @@
+check_name,status,observed,expected,details
+primary_anchor_scope_exists,PASS,True,True,/Users/joeyn256/Projects/NCAA Track Analytics Pipeline/data/processed/milestone5/collegiate_record_anchors_v1/scope_v1/primary_record_anchor_requirements.csv
+all_four_local_html_files_exist,PASS,0,0,
+primary_anchor_requirement_count,PASS,81,81,
+candidate_rows_extracted,PASS,584,at least 100,"Includes ratified, pending, secondary, and post-season listings."
+all_primary_requirements_profiled,PASS,81,81,
+majority_primary_requirements_have_active_candidate,PASS,77,at least 73,Expected unresolved cases are primarily 55m/55H and events not maintained by T&FN.

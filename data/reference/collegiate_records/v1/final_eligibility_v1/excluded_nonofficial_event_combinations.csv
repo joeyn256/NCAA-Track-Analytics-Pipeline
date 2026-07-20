@@ -1,0 +1,45 @@
+season_type,canonical_gender_code,canonical_event_code,canonical_event_name,performance_count,athlete_count,school_count,exclusion_reason
+indoor,f,10000M,10000m,21,21,13,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,100H,100m Hurdles,165,124,46,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,100M,100m,197,158,40,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,3000SC,3000m Steeplechase,35,34,23,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,400H,400m Hurdles,180,129,52,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,55H,55m Hurdles,6819,2005,238,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,55M,55m,8441,3007,239,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,DT,Discus Throw,829,498,102,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,HEP,Heptathlon,29,29,19,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,HT,Hammer Throw,158,128,45,not_an_individual_event_on_matching_tfn_record_page
+indoor,f,JT,Javelin Throw,147,120,46,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,10000M,10000m,16,16,9,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,100M,100m,146,128,43,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,110H,110m Hurdles,112,89,38,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,3000SC,3000m Steeplechase,36,33,20,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,400H,400m Hurdles,142,103,48,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,55H,55m Hurdles,5269,1559,194,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,55M,55m,7586,3027,204,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,DEC,Decathlon,13,13,8,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,DT,Discus Throw,730,458,91,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,HT,Hammer Throw,123,98,34,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,JT,Javelin Throw,117,98,39,not_an_individual_event_on_matching_tfn_record_page
+indoor,m,PENT,Pentathlon,193,132,45,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,1000M,1000m,78,70,27,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,300M,300m,246,214,38,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,500M,500m,19,17,14,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,55H,55m Hurdles,14,8,2,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,55M,55m,10,7,5,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,600M,600m,183,163,49,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,60H,60m Hurdles,152,107,48,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,60M,60m,172,123,52,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,PENT,Pentathlon,4,4,4,not_an_individual_event_on_matching_tfn_record_page
+outdoor,f,WT,Weight Throw,85,78,41,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,1000M,1000m,68,67,34,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,100H,100m Hurdles,51,5,4,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,300M,300m,203,177,32,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,500M,500m,20,20,13,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,55H,55m Hurdles,10,5,3,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,55M,55m,10,5,3,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,600M,600m,206,182,47,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,60H,60m Hurdles,87,62,34,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,60M,60m,131,102,46,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,HEP,Heptathlon,8,6,5,not_an_individual_event_on_matching_tfn_record_page
+outdoor,m,WT,Weight Throw,67,59,34,not_an_individual_event_on_matching_tfn_record_page

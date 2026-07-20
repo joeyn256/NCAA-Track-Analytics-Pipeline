@@ -1,0 +1,12 @@
+MILESTONE 5 PHASE 3D-S — FREEZE ELIGIBILITY ANCHOR METADATA
+==============================================================================
+Started UTC: 2026-07-19T17:45:59+00:00
+Input: /Users/joeyn256/Projects/NCAA Track Analytics Pipeline/data/reference/collegiate_records/v1/final_eligibility_v1/active_collegiate_eligibility_anchors.csv
+Output: /Users/joeyn256/Projects/NCAA Track Analytics Pipeline/data/reference/collegiate_records/v1/final_eligibility_v1_1
+
+Active anchors: 82
+Pending active anchors: 8
+Outside-season anchors tagged: 5
+
+PHASE GATE: PASS
+Next: profile the scoring cohort and participation reach.

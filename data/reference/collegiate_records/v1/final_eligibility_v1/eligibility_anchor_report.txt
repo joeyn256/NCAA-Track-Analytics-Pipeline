@@ -1,0 +1,27 @@
+MILESTONE 5 PHASE 3D-R — COLLEGIATE-ELIGIBILITY ANCHORS
+==============================================================================
+Finished UTC: 2026-07-19T17:33:53+00:00
+Registry version: collegiate_eligibility_anchors_v1
+Policy version: tfn_regular_plus_verified_postseason_pending_active_v1
+
+ELIGIBILITY POLICY
+------------------------------------------------------------------------------
+T&FN individual record pages define official events.
+Regular-season and T&FN-verified outside-season marks count.
+T&FN states outside-season athletes have not graduated/turned pro.
+Pending marks count immediately when they are the best mark.
+Ordinary pipeline performances still require school-stint validation.
+
+RESULTS
+------------------------------------------------------------------------------
+Accepted unique source candidates: 120
+Rejected candidates: 464
+Official scoring anchors: 82
+Pending marks promoted: 8
+Outside-season marks promoted: 0
+Excluded nonofficial combinations: 44
+Official-event performance coverage: 99.290504%
+
+PHASE GATE
+------------------------------------------------------------------------------
+FAIL — Do not use or commit this registry.

@@ -1,19 +1,8 @@
 # NCAA Track Analytics Pipeline
 
-A large-scale, end-to-end data engineering and sports analytics project for collecting, validating, reconstructing, and analyzing historical NCAA Division I Track & Field and Cross Country data from TFRRS.
+A reproducible data-engineering and analytics platform for historical NCAA Division I track and field performance data.
 
-The project now includes:
-
-- a reproducible historical data-collection pipeline;
-- a resumable performance parser;
-- a fully audited relational DuckDB database;
-- transfer-aware historical team attribution;
-- canonical athlete identity resolution;
-- person-level performance deduplication;
-- chronological NCAA Division I school stints;
-- complete source-performance provenance.
-
-The next phase will normalize events and marks, measure athlete development, and rank NCAA Division I programs by how effectively their athletes improve.
+The project collects athlete and roster history, parses millions of performances, constructs a relational DuckDB warehouse, resolves transfers and duplicate athlete identities, and ranks programs by how effectively their athletes improve relative to a school-held-out expectation benchmark.
 
 ---
 
@@ -41,25 +30,41 @@ The next phase will normalize events and marks, measure athlete development, and
 | Performance-data chunks | 194 |
 | Canonical source files registered with SHA-256 hashes | 1,105 |
 
-### Canonical identity and school-stint layer
+### Canonical identity and school attribution
 
 | Metric | Final value |
 |---|---:|
 | Canonical people | 192,561 |
 | High-confidence multi-profile people | 1,352 |
-| Source profiles in merged identity components | 2,752 |
-| School-stint-eligible source performance rows | 6,474,538 |
 | Deduplicated canonical-person performances | 6,376,667 |
-| Duplicate source performance rows removed | 97,871 |
-| D1-eligible performances mapped to school stints | 6,376,505 |
-| Person-meet team assignments | 3,867,249 |
+| Duplicate profile-level performance rows removed | 97,871 |
+| D1 performances mapped to school stints | 6,376,505 |
 | Canonical people with D1 school stints | 170,655 |
 | Final D1 school stints | 174,429 |
 | People represented by multiple school stints | 3,612 |
-| People returning to a previous team | 44 |
 | Person-performance team conflicts resolved | 35,694 |
-| Remaining person-performance team conflicts | 0 |
+| Remaining team conflicts | 0 |
 | Remaining unreviewed chronology islands | 0 |
+
+### Athlete-development analytics
+
+| Metric | Final value |
+|---|---:|
+| Approved collegiate record anchors | 82 |
+| Eligible normalized performance rows | 4,664,041 |
+| Stable athlete-event periods | 1,628,956 |
+| Observed development trajectories | 189,839 |
+| Primary modeling trajectories | 189,703 |
+| Athletes in expected-improvement cohort | 79,535 |
+| Schools in expected-improvement cohort | 361 |
+| Athlete-event-family units | 98,888 |
+| Athlete-school units | 80,077 |
+| Officially ranked schools | 353 |
+| Insufficient-data schools retained | 8 |
+| Canonical individual events ranked | 30 |
+| Coaching-oriented event groups | 10 |
+| Official event/group ranking rows | 25,619 |
+| Supplemental ranking products | 8 |
 
 ### Validation status
 
@@ -67,13 +72,10 @@ The next phase will normalize events and marks, measure athlete development, and
 - 0 duplicate source performance IDs
 - 0 relational orphan records
 - 0 missing D1 performance-to-stint assignments
-- 0 duplicate final school-stint IDs
-- 0 duplicate final performance-map IDs
-- 0 unreviewed chronology exceptions
-- Milestone 1 final audit: **PASS**
-- Milestone 2 final audit: **PASS**
-- Milestone 3 production build and independent validation: **PASS**
-- Milestone 4 canonical identity and school-stint validation: **PASS**
+- 0 unresolved person-performance team conflicts
+- 0 invalid final school-ranking rows
+- 0 failed ranking sensitivity variants
+- Milestones 1–5 final phase gates: **PASS**
 
 ---
 
@@ -81,12 +83,6 @@ The next phase will normalize events and marks, measure athlete development, and
 
 ```text
 NCAA Division I Directory
-            │
-            ▼
-        School Teams
-            │
-            ▼
-     Historical Seasons
             │
             ▼
      Historical Rosters
@@ -101,257 +97,214 @@ NCAA Division I Directory
    Production Data Audit
             │
             ▼
- Relational DuckDB Database
-            │
-            ▼
- Transfer-Aware Attribution
+ Relational DuckDB Warehouse
             │
             ▼
  Canonical Athlete Identity
             │
             ▼
- Person-Level Deduplication
-            │
-            ▼
- Chronological D1 School Stints
+ Transfer-Aware School Stints
             │
             ▼
  Event and Mark Normalization
             │
             ▼
- Athlete Development Scoring
+ Collegiate Record Anchors
             │
             ▼
- D1 Program Development Rankings
+ Stable Athlete-Event Periods
+            │
+            ▼
+ Observed Development Trajectories
+            │
+            ▼
+ School-Held-Out Expected Improvement
+            │
+            ▼
+ Athlete Value Added
+            │
+            ▼
+ Multi-Event-Neutral Aggregation
+            │
+            ▼
+ Empirical-Bayes School Rankings
+            │
+            ▼
+ Event, Group, and Supplemental Rankings
 ```
 
 ---
 
-## Completed Work
+## Completed Milestones
 
 ### Milestone 1 — Historical Data Collection
-
-The collection pipeline identified NCAA Division I programs, discovered historical seasons, downloaded historical rosters, consolidated nearly one million roster records, and collected more than 193,000 athlete profile pages.
-
-Key results:
 
 - 714 NCAA Division I team entries
 - 34,334 historical roster files
 - 992,774 historical roster records
-- 193,961 source athlete profiles
-- 193,954 available athlete pages
-- 7 confirmed unavailable athlete pages
+- 193,954 athlete pages collected
 - 99.9964% athlete-page collection success
-- final collection audit: **PASS**
-
----
+- final audit: **PASS**
 
 ### Milestone 2 — Performance Parsing
 
-The parsing pipeline transformed locally stored athlete HTML pages into structured performance records.
-
-Key results:
-
 - 193,954 athlete pages processed
 - 172,204 athletes with performances
-- 21,750 athlete pages with no recorded meet results
 - 6,594,540 unique performance records
-- 194 resumable performance chunks
-- 194 parser-status chunks
-- 0 athlete-page parsing failures
-- 0 missing season classifications
-- 0 duplicate performance IDs after cleanup
-- Indoor, Outdoor, and Cross Country support
-- final performance audit: **PASS**
-
-The parser preserves:
-
-- athlete and source-school information;
-- season year and season type;
-- meet names and dates;
-- raw event names;
-- marks and secondary marks;
-- wind readings;
-- placements;
-- competition rounds;
-- result and meet URLs;
-- source filenames;
-- deterministic performance identifiers.
-
----
+- 194 resumable chunks
+- 0 parser failures
+- Indoor, Outdoor, and Cross Country source support
+- final audit: **PASS**
 
 ### Milestone 3 — Relational Database Construction
 
-Milestone 3 converted the audited collection and performance outputs into a reproducible DuckDB analytical database.
+The production DuckDB warehouse contains:
 
-The production database is generated locally at:
-
-```text
-data/database/ncaa_track_analytics.duckdb
-```
-
-Final database results:
-
-- 703,868,928 bytes
 - 6,594,540 performance facts
-- 6,594,540 distinct performance IDs
-- 990,681 unique historical athlete affiliations
-- 193,961 athletes
+- 990,681 historical athlete affiliations
+- 193,961 source athlete profiles
 - 973 teams
 - 554 institutions
 - 71 seasons
 - 32,416 meets
 - 378 raw event labels
-- 1,105 registered canonical source files
+- 1,105 source files registered with hashes
 - 35 mandatory integrity checks passed
-- 0 failed hard checks
 - 0 relational orphan records
 
-Historical affiliations were constructed from roster evidence rather than assuming that an athlete's current profile school applied to every season.
-
-All source-faithful marks, dates, placements, event labels, URLs, and filenames remain preserved.
-
----
-
-### Milestone 4 — Canonical Athlete Identity and D1 School Stints
-
-Milestone 4 reconstructed athlete identity and historical team membership so that development can be credited to the correct NCAA Division I program.
-
-This phase addressed several issues that could not be solved safely from current profile metadata alone:
-
-- athletes with multiple TFRRS profile IDs;
-- transfers across NCAA programs;
-- stale profile-school labels;
-- historical performances listed under several team sections;
-- duplicate performances repeated across profiles;
-- conflicting team assignments for the same person-performance;
-- later performances at non-D1 institutions;
-- isolated but legitimate chronology patterns.
-
-#### Canonical athlete identity
-
-The identity layer mapped:
+Production database:
 
 ```text
-193,961 source athlete profiles
-        ↓
-192,561 canonical people
+data/database/ncaa_track_analytics.duckdb
 ```
 
-Only validated high-confidence components were merged.
+### Milestone 4 — Canonical Identity and D1 School Stints
 
-Identity candidates required:
+Milestone 4 resolved duplicate profiles, transfers, stale current-school labels, repeated performances, and person-level team conflicts.
 
-- matching normalized names;
-- compatible gender;
-- repeated exact individual-performance signatures;
-- sufficient overlap across the smaller profile;
-- relay and medley exclusions during identity discovery.
+Final results:
 
-Final identity results:
+- 192,561 canonical people
+- 6,376,667 deduplicated canonical-person performances
+- 97,871 analytical duplicates removed
+- 35,694 team conflicts resolved
+- 174,429 chronological D1 school stints
+- 6,376,505 performances mapped to exactly one school stint
+- 0 unresolved conflicts
+- validation: **PASS**
 
-| Metric | Value |
-|---|---:|
-| High-confidence multi-profile people | 1,352 |
-| Profiles in merged components | 2,752 |
-| Components containing multiple normalized names | 0 |
-| Profiles assigned to more than one canonical person | 0 |
-
-#### Person-performance deduplication
-
-Duplicate performances were removed analytically within each canonical person while preserving every source performance ID in a bridge table.
-
-The deduplication signature used:
-
-- season;
-- meet;
-- event;
-- primary mark;
-- secondary mark;
-- wind;
-- place;
-- competition round;
-- raw place;
-- result URL.
-
-Final deduplication results:
-
-| Category | Canonical rows | Source rows | Rows removed |
-|---|---:|---:|---:|
-| Multi-profile duplicate signatures | 94,089 | 191,960 | 97,871 |
-| Single-profile signatures | 6,282,578 | 6,282,578 | 0 |
-| **Total** | **6,376,667** | **6,474,538** | **97,871** |
-
-#### Person-level team conflict resolution
-
-Duplicate profiles sometimes attributed the same exact performance to different teams.
-
-All 35,694 person-performance conflicts were resolved:
-
-| Resolution method | Conflict groups |
-|---|---:|
-| Canonical team uniquely matched the source team | 34,285 |
-| Unique strongest attribution evidence | 1,247 |
-| Exact result-page team evidence | 158 |
-| Constrained person-season continuity evidence | 4 |
-| **Total** | **35,694** |
-
-Remaining person-performance team conflicts: **0**
-
-The constrained continuity rule was used only when:
-
-- the exact result row could not provide a unique team;
-- one team was directly established for the same person in the immediately preceding indoor season of the same calendar year;
-- the unresolved source team or school agreed with that team.
-
-It was not used as a general current-team or chronology fallback.
-
-#### Final D1 school stints
-
-The validated canonical-person performances were ordered chronologically and collapsed into consecutive school-team runs.
-
-The final process:
-
-1. reduced performances to one team assignment per canonical person and meet;
-2. parsed every meet date;
-3. ordered each person's appearances chronologically;
-4. collapsed consecutive appearances for the same team;
-5. preserved legitimate returns to a previous school as separate stints;
-6. mapped every eligible canonical performance to exactly one stint.
-
-Final school-stint results:
-
-| Metric | Value |
-|---|---:|
-| D1-eligible canonical performances | 6,376,505 |
-| Person-meet assignments | 3,867,249 |
-| Canonical people with D1 stints | 170,655 |
-| Final school stints | 174,429 |
-| People with multiple stints | 3,612 |
-| People returning to a previous team | 44 |
-| Missing performance-to-stint assignments | 0 |
-| Duplicate school-stint IDs | 0 |
-| Duplicate performance-map IDs | 0 |
-
-#### Reviewed chronology exceptions
-
-Two single-meet A→B→A patterns remained after final stint construction.
-
-Exact TFRRS result-page evidence confirmed that the middle-team assignments were valid:
-
-| Athlete | Meet | Accepted team |
-|---|---|---|
-| Emily Venters | 2018 Nuttycombe Wisconsin Invitational | Colorado |
-| Daniella Hubble | 2023 Wisconsin Badger Classic | Illinois |
-
-These cases are retained and registered explicitly as reviewed chronology exceptions.
-
-They were not silently overwritten, and no unreviewed chronology islands remain.
-
-The complete Milestone 4 report is available in:
+Detailed report:
 
 ```text
 milestones/milestone_04_canonical_identity_and_school_stints.md
+```
+
+### Milestone 5 — Athlete Development Rankings
+
+Milestone 5 measures development using:
+
+```text
+athlete value added
+= observed normalized improvement
+− school-held-out expected improvement
+```
+
+Key design features:
+
+- event-specific record anchors;
+- nonlinear performance levels that reward improvement near the frontier;
+- stable multi-meet athlete-event periods;
+- transfer-aware school attribution;
+- five-fold school-grouped cross-fitting;
+- equal-family, equal-athlete aggregation;
+- empirical-Bayes shrinkage;
+- 95% uncertainty intervals;
+- minimum-sample publication rules;
+- outlier and sensitivity audits.
+
+Selected expected-improvement model:
+
+```text
+resolution_raw_mean
+```
+
+Out-of-sample metrics:
+
+| Metric | Value |
+|---|---:|
+| MAE | 3.3919 |
+| RMSE | 4.5327 |
+| Calibration slope | 0.9704 |
+| Prediction correlation | 0.4517 |
+| R² | 0.2038 |
+
+Primary publication results:
+
+| Metric | Value |
+|---|---:|
+| Athlete-school units | 80,077 |
+| Schools represented | 361 |
+| Officially ranked schools | 353 |
+| Insufficient-data schools | 8 |
+| Mean shrinkage weight | 0.793 |
+| Minimum alternative rank correlation | 0.9979 |
+| Minimum top-10 overlap | 90% |
+| Minimum top-25 overlap | 92% |
+| Failed sensitivity variants | 0 |
+
+#### Official overall top 10
+
+| Rank | School | Athletes | Posterior score |
+|---:|---|---:|---:|
+| 1 | Air Force | 374 | 1.2442 |
+| 2 | LSU | 304 | 1.1119 |
+| 3 | Kentucky | 248 | 0.9874 |
+| 4 | Ohio State | 337 | 0.8917 |
+| 5 | Arkansas | 305 | 0.8500 |
+| 6 | Minnesota | 421 | 0.8309 |
+| 7 | Wisconsin | 272 | 0.8175 |
+| 8 | Arizona | 299 | 0.7961 |
+| 9 | Florida | 252 | 0.7546 |
+| 10 | Indiana | 318 | 0.7453 |
+
+#### Event and group products
+
+The project publishes rankings for:
+
+- 30 canonical individual events;
+- indoor and outdoor event partitions;
+- men, women, and combined-gender scopes;
+- Sprints;
+- Middle Distance;
+- Distance;
+- Hurdles;
+- Steeplechase;
+- Jumps;
+- Throws;
+- Combined Events;
+- Field;
+- Special Events.
+
+#### Supplemental products
+
+| Product | Current leader |
+|---|---|
+| Development Consistency | Air Force |
+| Elite / Frontier Development | Air Force |
+| Developing baseline tier | Northern Iowa |
+| Competitive baseline tier | LSU |
+| Advanced baseline tier | Arkansas |
+| Elite baseline tier | Air Force |
+| Breakout Rate | Mercer |
+| Balanced Program | LSU |
+| Development Efficiency | UC San Diego |
+| Ranking Robustness | Air Force |
+| Inbound Transfer Development | Florida |
+
+Detailed methodology:
+
+```text
+milestones/milestone_05_athlete_development_rankings.md
 ```
 
 ---
@@ -360,220 +313,49 @@ milestones/milestone_04_canonical_identity_and_school_stints.md
 
 Generated databases remain local and are excluded from Git.
 
-### Milestone 3 source database
+### Source warehouse
 
 ```text
 data/database/ncaa_track_analytics.duckdb
 ```
 
-This is the immutable relational source database.
-
-### Final canonical-person database
+### Milestone 4 canonical-person layer
 
 ```text
 data/processed/milestone4/canonical_person_layer_v1_1/
 canonical_person_layer_v1_1.duckdb
 ```
 
-Primary objects:
-
-- `canonical_person_bridge`
-- `canonical_people`
-- `canonical_person_performance_map`
-- `canonical_person_performances`
-- `conflict_resolution_registry`
-- `school_stint_person_performances`
-
-### Final school-stint database
+### Milestone 4 school-stint layer
 
 ```text
 data/processed/milestone4/final_school_stints_v1_1/
 final_school_stints_v1_1.duckdb
 ```
 
-Primary objects:
-
-- `person_meet_team_assignments`
-- `canonical_person_school_stints`
-- `school_stint_performance_map`
-- `chronology_exception_registry`
-- `chronology_exception_source_rows`
-- `transfer_school_stints`
-- `reviewed_chronology_exceptions`
-- `analytical_school_stints`
-
----
-
-## Database Architecture
-
-The Milestone 3 DuckDB database contains four schemas:
-
-| Schema | Purpose |
-|---|---|
-| `raw` | Source-faithful views over canonical CSV inputs |
-| `core` | Relational dimensions, historical affiliations, and performance facts |
-| `analytics` | Reserved for normalized analytical tables, features, and views |
-| `audit` | Build runs, source hashes, row counts, conflicts, and integrity checks |
-
-### Core tables
-
-| Table | Purpose |
-|---|---|
-| `core.schools` | Institution-level school records |
-| `core.teams` | Gender-specific and historical team records |
-| `core.athletes` | Source athlete profiles and current profile metadata |
-| `core.seasons` | Indoor, Outdoor, and Cross Country seasons |
-| `core.meets` | Distinct meet records |
-| `core.events` | Source-faithful event labels |
-| `core.athlete_affiliations` | Historical roster-derived athlete-team-season relationships |
-| `core.performances` | Complete source performance fact table |
-
-### Audit tables
-
-The source database records:
-
-- build metadata;
-- schema versions;
-- source-file paths;
-- file sizes;
-- SHA-256 hashes;
-- source row counts;
-- core table counts;
-- integrity checks;
-- historical roster duplicate groups;
-- affiliation coverage;
-- dimension conflicts.
-
----
-
-## Historical Affiliation Handling
-
-The raw historical roster source contains:
+### Milestone 5 primary publication
 
 ```text
-992,774 roster rows
-990,681 unique affiliation records
-2,093 duplicate excess rows
+data/processed/milestone5/athlete_development_v1/
+phase_5i_publication_freeze/
+ncaa_d1_athlete_development_rankings_v1.duckdb
 ```
 
-The source database preserves evidence of duplicate roster rows in the audit schema while loading only unique historical affiliations into the core schema.
-
-Indoor roster seasons are linked using the ending year:
+### Milestone 5 event and group rankings
 
 ```text
-2022-23 Indoor → 2023_indoor
+data/processed/milestone5/athlete_development_v1/
+phase_5j_event_and_group_rankings/
+ncaa_d1_event_development_rankings_v1.duckdb
 ```
 
-Of the 6,594,540 source performance records:
-
-- 5,916,703 matched an exact historical roster affiliation;
-- 479 had a blank source team ID;
-- 32,776 belonged to performance-only historical teams;
-- 644,582 belonged to directory teams without an exact roster-season match.
-
-Milestone 4 added a separate transfer-aware attribution and person-level conflict-resolution layer rather than mutating the original source facts.
-
----
-
-## Data Quality and Auditing
-
-The initial production parse created:
+### Milestone 5 supplemental rankings
 
 ```text
-6,600,607 rows
+data/processed/milestone5/athlete_development_v1/
+phase_5k_supplemental_development_rankings/
+supplemental_development_rankings_v1.duckdb
 ```
-
-A full production audit identified:
-
-- 5,170 exact duplicate rows;
-- 897 additional rows differing only in the TFRRS `highlighted` flag;
-- 0 duplicate groups differing in meaningful performance data.
-
-The source-level duplicate cleanup preserved one row per deterministic performance ID and retained `highlighted=True` whenever any duplicate copy was highlighted.
-
-Final audited source performance total:
-
-```text
-6,594,540 unique performance records
-```
-
-Milestone 4 then removed duplicate performances occurring across multiple profiles for the same canonical person:
-
-```text
-97,871 additional analytical duplicate rows removed
-```
-
-Every original source performance remains traceable through the canonical-person performance map.
-
----
-
-## Reproducing the Milestone 3 Database
-
-### 1. Activate the virtual environment
-
-```bash
-source .venv/bin/activate
-```
-
-### 2. Install the Milestone 3 dependency set
-
-```bash
-python -m pip install \
-    --requirement requirements-milestone3.txt
-```
-
-### 3. Run the production preflight
-
-```bash
-python src/database/build_database.py \
-    --preflight-only
-```
-
-### 4. Build the database
-
-```bash
-set -o pipefail
-
-python src/database/build_database.py \
-    --build \
-    2>&1 | tee data/database/milestone3_build.log
-```
-
-The builder uses a temporary staging database and only publishes the final database after every mandatory audit passes.
-
-### 5. Validate the completed database
-
-```bash
-python src/database/validate_production_database.py \
-    | tee data/database/milestone3_production_validation.txt
-```
-
-The validator opens the production database in read-only mode and independently checks table counts, source hashes, performance uniqueness, affiliation coverage, raw views, and relational integrity.
-
-Milestone 4 is reproduced through the ordered scripts in:
-
-```text
-src/analysis/milestone4/
-```
-
-Each major phase writes to a separate audit directory or DuckDB database and attaches prior databases in read-only mode.
-
----
-
-## Technology Stack
-
-- Python 3.12
-- DuckDB
-- SQL
-- Pandas
-- BeautifulSoup
-- Requests
-- pathlib
-- regular expressions
-- CSV
-- HTML
-- Git
-- GitHub
 
 ---
 
@@ -584,20 +366,22 @@ NCAA Track Analytics Pipeline/
 ├── data/
 │   ├── raw/
 │   ├── processed/
-│   └── database/
-│
+│   ├── database/
+│   └── reference/
+│       └── collegiate_records/
 ├── logs/
 ├── milestones/
 │   ├── milestone_01_data_collection.md
 │   ├── milestone_02_performance_parsing.md
 │   ├── milestone_03_database_construction.md
 │   ├── milestone_03_database_audit.md
-│   └── milestone_04_canonical_identity_and_school_stints.md
-│
+│   ├── milestone_04_canonical_identity_and_school_stints.md
+│   └── milestone_05_athlete_development_rankings.md
 ├── notebooks/
 ├── src/
 │   ├── analysis/
-│   │   └── milestone4/
+│   │   ├── milestone4/
+│   │   └── milestone5/
 │   ├── database/
 │   ├── parser/
 │   ├── processing/
@@ -605,76 +389,139 @@ NCAA Track Analytics Pipeline/
 │   ├── config.py
 │   ├── logger.py
 │   └── main.py
-│
 ├── tests/
 ├── README.md
 ├── requirements.txt
 └── requirements-milestone3.txt
 ```
 
-Large raw data, processed performance chunks, athlete HTML pages, generated databases, audit outputs, and build logs are stored locally and excluded from GitHub.
+---
+
+## Technology Stack
+
+- Python 3.12
+- DuckDB
+- SQL
+- Pandas
+- NumPy
+- BeautifulSoup
+- Requests
+- pathlib
+- regular expressions
+- CSV and HTML
+- Git and GitHub
 
 ---
 
-## Engineering Features
+## Engineering and Statistical Features
 
-- modular scraping, parsing, database, attribution, and analytics architecture;
-- centralized project configuration;
-- retry and failure handling;
-- adaptive request pacing;
-- manifest-based input processing;
-- resumable production runs;
-- atomic output-file creation;
+- modular scraping, parsing, database, attribution, and modeling architecture;
+- adaptive request pacing and resumable collection;
 - chunked large-scale processing;
-- deterministic source performance identifiers;
-- source-faithful raw-value preservation;
+- deterministic identifiers;
+- source-faithful raw preservation;
 - historical roster-derived affiliations;
-- transfer-aware team attribution;
 - canonical athlete identity resolution;
-- analytical duplicate-profile merging;
+- transfer-aware chronological school stints;
 - source-to-canonical provenance bridges;
-- person-level team conflict registries;
 - exact result-page evidence extraction;
-- targeted and documented fallback rules;
-- chronological school-stint reconstruction;
-- explicit chronology exception registry;
-- read-only input database attachments;
-- separate versioned analytical databases;
-- transactional database construction;
-- independent validation;
-- SHA-256 source-file registration;
-- relational orphan detection;
-- persistent status and checkpoint files;
-- reproducible dependency pinning.
+- versioned analytical databases;
+- read-only upstream database attachments;
+- record-anchor provenance and manual review;
+- event-specific nonlinear performance scaling;
+- stable multi-meet period construction;
+- school-grouped cross-fitting;
+- expected-improvement residual scoring;
+- multi-event-neutral athlete weighting;
+- empirical-Bayes school shrinkage;
+- confidence intervals and evidence categories;
+- alternative-model and remove-best/remove-worst sensitivity tests;
+- SHA-256 input and output manifests;
+- hard phase gates and independent validation.
 
 ---
 
-## Current Status
+## Reproduction
 
-**Milestone 4 is complete.**
+Activate the project environment:
 
-The project now has a validated analytical foundation that answers three critical questions for every eligible performance:
+```bash
+source .venv/bin/activate
+```
 
-1. Which canonical person produced it?
-2. Which historical team should receive attribution?
-3. Which chronological school stint does it belong to?
+Build and validate the source database:
 
-The next phase is **Milestone 5 — Athlete Development Rankings**.
+```bash
+python src/database/build_database.py --preflight-only
 
-Planned work includes:
+set -o pipefail
+python src/database/build_database.py \
+    --build \
+    2>&1 | tee data/database/milestone3_build.log
 
-- canonical event-name normalization;
-- mark and time parsing;
-- event-family classification;
-- indoor/outdoor comparability rules;
-- cross-country distance handling;
-- valid-performance filtering;
-- baseline and endpoint selection;
-- event-specific performance scaling;
-- human-limit-aware improvement scoring;
-- athlete-level development scores;
-- school-level aggregation and reliability controls;
-- NCAA Division I program rankings.
+python src/database/validate_production_database.py \
+    | tee data/database/milestone3_production_validation.txt
+```
+
+Milestone 4 scripts are stored in:
+
+```text
+src/analysis/milestone4/
+```
+
+Milestone 5 scripts are stored in:
+
+```text
+src/analysis/milestone5/
+```
+
+Every major analytical phase writes a versioned DuckDB artifact, manifests, hard checks, and a phase report. Upstream databases are attached read-only.
+
+See the milestone reports for the exact ordered workflow and phase-specific commands.
+
+---
+
+## Data Availability
+
+The repository contains:
+
+- source code;
+- SQL and analytical logic;
+- dependency files;
+- validation tools;
+- record-anchor reference metadata;
+- milestone documentation;
+- reproducible build logic.
+
+Large generated artifacts are not committed:
+
+- athlete HTML pages;
+- historical roster files;
+- performance chunks;
+- parser checkpoints;
+- generated DuckDB databases;
+- processed ranking CSVs;
+- audit outputs;
+- result-page caches;
+- build and terminal logs.
+
+---
+
+## Interpretation and Limitations
+
+The ranking estimates school-associated athlete development; it is not a randomized causal estimate of coaching quality.
+
+Important limitations:
+
+- results depend on recorded TFRRS coverage;
+- sparse contexts may use broader expected-model fallbacks;
+- small event partitions may be tied after shrinkage;
+- transfer status is inferred from observed school chronology;
+- adjacent ranks may not be statistically distinguishable;
+- relays require lineup-aware team modeling;
+- cross country requires course- and condition-aware modeling.
+
+Relays and cross country are planned future extensions rather than unfinished Milestone 5 requirements.
 
 ---
 
@@ -685,55 +532,25 @@ Planned work includes:
 - ✅ [Milestone 3 — Relational Database Construction](milestones/milestone_03_database_construction.md)
 - ✅ [Milestone 3 — Production Database Audit](milestones/milestone_03_database_audit.md)
 - ✅ [Milestone 4 — Canonical Athlete Identity and D1 School Stints](milestones/milestone_04_canonical_identity_and_school_stints.md)
-- ⏳ Milestone 5 — Athlete Development Rankings
+- ✅ [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
 - ⏳ Milestone 6 — Exploratory Analytics and Visualization
 - ⏳ Milestone 7 — Predictive Modeling
 
 ---
 
-## Data Availability
+## Current Status
 
-The repository contains:
+**Milestone 5 is complete.**
 
-- source code;
-- SQL schemas;
-- dependency files;
-- validation tools;
-- milestone documentation;
-- reproducible build logic.
+The project now provides:
 
-The complete raw and processed datasets are not committed because they contain millions of records and several gigabytes of locally collected files.
+1. canonical athlete identity;
+2. transfer-aware school attribution;
+3. record-anchored performance levels;
+4. school-held-out expected improvement;
+5. athlete value added;
+6. uncertainty-adjusted NCAA Division I program rankings;
+7. individual-event and coaching-group rankings;
+8. supplemental consistency, frontier, baseline-tier, breakout, balance, efficiency, robustness, and transfer analyses.
 
-Excluded generated artifacts include:
-
-- raw athlete HTML pages;
-- historical roster files;
-- processed performance chunks;
-- parser checkpoints;
-- DuckDB database files;
-- temporary and diagnostic databases;
-- result-page HTML caches;
-- build logs;
-- validation logs;
-- generated audit CSV files.
-
-The project is structured so that every stage can be reproduced from documented inputs and processing scripts.
-
----
-
-## Project Goals
-
-The completed platform will support questions such as:
-
-- How do NCAA athletes progress across their collegiate careers?
-- Which programs produce the strongest athlete development?
-- How should improvement be measured across events with different scales?
-- How does starting ability affect the significance of an improvement?
-- Which schools improve already-elite athletes most effectively?
-- How do transfer athletes develop at each school they attend?
-- How do progression trends differ by event, gender, school, and season?
-- Which performance patterns are associated with future improvement?
-- How accurately can future performances be predicted?
-- Which athletes are improving faster than comparable competitors?
-
-The central analytical goal is to distinguish raw talent acquisition from genuine athlete development and produce transparent, evidence-based NCAA Division I program rankings.
+The next project phase is Milestone 6: exploratory visualization and interactive analytical products.

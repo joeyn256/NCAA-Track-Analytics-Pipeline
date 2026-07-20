@@ -1,0 +1,26 @@
+MILESTONE 5 PHASE 3D — OFFICIAL-EVENT RECORD ANCHORS
+==============================================================================
+Finished UTC: 2026-07-19T17:22:02+00:00
+Registry version: official_collegiate_record_anchors_v1
+Policy version: tfn_official_events_pending_active_v1
+
+SOURCE-DEFINED EVENT POLICY
+------------------------------------------------------------------------------
+T&FN individual record tables define the event universe.
+Relays and unsupported event combinations are excluded.
+No minimum-performance threshold defines event legitimacy.
+Pending marks are active when better than ratified marks.
+
+RESULTS
+------------------------------------------------------------------------------
+Official source event keys: 88
+Official scoring event combinations: 82
+Pending marks promoted to active: 8
+Excluded nonofficial requirement combinations: 44
+Official-event scoring performances: 4,664,090
+All requirement performances: 4,697,418
+Official-event performance coverage: 99.290504%
+
+PHASE GATE
+------------------------------------------------------------------------------
+PASS — Official event scope and active record anchors frozen.

@@ -1,0 +1,24 @@
+MILESTONE 5 PHASE 3C-R2 — LOCAL COLLEGIATE RECORD IMPORT
+==============================================================================
+Finished UTC: 2026-07-19T17:16:15+00:00
+Dataset version: collegiate_records_v1
+Importer version: local_tfn_importer_v2
+
+RESULTS
+------------------------------------------------------------------------------
+Local source pages: 4
+Extracted record candidates: 584
+Active ratified candidates selected: 77
+Pending candidates preserved: 22
+Primary combinations requiring manual policy: 4
+
+PARSER POLICY
+------------------------------------------------------------------------------
+HTML table rows are parsed before flattened page text.
+Adjacent table cells are joined into one logical record row.
+A stateful text parser provides fallback coverage.
+Pending, secondary, and post-season marks remain non-active.
+
+PHASE GATE
+------------------------------------------------------------------------------
+PASS — Local collegiate record candidates imported.

@@ -1,0 +1,83 @@
+season_type,canonical_gender_code,canonical_event_code,canonical_event_name,performance_count,candidate_count,regular_candidate_count,outside_candidate_count,ratified_candidate_count,pending_candidate_count,active_anchor_mark,active_anchor_status
+indoor,f,1000M,1000m,18538,1,1,0,1,0,2:37.72,ratified_active_anchor
+indoor,f,1500M,1500m,969,1,1,0,1,0,4:01.60,ratified_active_anchor
+indoor,f,200M,200m,108556,1,1,0,1,0,22.01,ratified_active_anchor
+indoor,f,3000M,3000m,73710,1,1,0,1,0,8:31.39,ratified_active_anchor
+indoor,f,300M,300m,10062,1,1,0,1,0,35.80,ratified_active_anchor
+indoor,f,400M,400m,83944,1,1,0,1,0,49.24,ratified_active_anchor
+indoor,f,5000M,5000m,27902,1,1,0,1,0,14:44.79,ratified_active_anchor
+indoor,f,500M,500m,14914,1,1,0,1,0,1:08.40,ratified_active_anchor
+indoor,f,600M,600m,12275,1,1,0,1,0,1:24.19,ratified_active_anchor
+indoor,f,60H,60m Hurdles,116383,2,2,0,2,0,7.72,ratified_active_anchor
+indoor,f,60M,60m,124173,2,2,0,2,0,6.94,ratified_active_anchor
+indoor,f,800M,800m,90203,1,1,0,1,0,1:58.40,ratified_active_anchor
+indoor,f,HJ,High Jump,64797,2,2,0,2,0,2.00,ratified_active_anchor
+indoor,f,LJ,Long Jump,89040,1,1,0,1,0,7.03,ratified_active_anchor
+indoor,f,MILE,Mile,88095,1,1,0,1,0,4:20.61,ratified_active_anchor
+indoor,f,PENT,Pentathlon,15217,1,1,0,1,0,4746,ratified_active_anchor
+indoor,f,PV,Pole Vault,46971,1,1,0,1,0,4.91,ratified_active_anchor
+indoor,f,SP,Shot Put,84968,1,1,0,1,0,19.75,ratified_active_anchor
+indoor,f,TJ,Triple Jump,43783,2,2,0,2,0,15.12,ratified_active_anchor
+indoor,f,WT,Weight Throw,70388,1,1,0,1,0,25.56,ratified_active_anchor
+indoor,m,1000M,1000m,27467,1,1,0,1,0,2:16.84,ratified_active_anchor
+indoor,m,1500M,1500m,1125,1,1,0,1,0,3:33.41,ratified_active_anchor
+indoor,m,200M,200m,79748,1,1,0,1,0,19.95,ratified_active_anchor
+indoor,m,3000M,3000m,68362,1,1,0,1,0,7:30.15,ratified_active_anchor
+indoor,m,300M,300m,7854,1,1,0,1,0,31.99,ratified_active_anchor
+indoor,m,400M,400m,72348,1,1,0,1,0,44.49,ratified_active_anchor
+indoor,m,5000M,5000m,28070,1,1,0,1,0,12:57.14,ratified_active_anchor
+indoor,m,500M,500m,13974,1,1,0,1,0,1:00.63,ratified_active_anchor
+indoor,m,600M,600m,10238,1,1,0,1,0,1:14.67,ratified_active_anchor
+indoor,m,60H,60m Hurdles,84213,1,1,0,1,0,7.32,ratified_active_anchor
+indoor,m,60M,60m,113685,3,3,0,3,0,6.45,ratified_active_anchor
+indoor,m,800M,800m,66073,1,1,0,1,0,1:44.70,ratified_active_anchor
+indoor,m,HEP,Heptathlon,10510,1,1,0,1,0,6639,ratified_active_anchor
+indoor,m,HJ,High Jump,46093,1,1,0,1,0,2.37,ratified_active_anchor
+indoor,m,LJ,Long Jump,64702,1,1,0,1,0,8.59,ratified_active_anchor
+indoor,m,MILE,Mile,76384,1,1,0,1,0,3:48.32,ratified_active_anchor
+indoor,m,PV,Pole Vault,46630,2,2,0,2,0,6.00,ratified_active_anchor
+indoor,m,SP,Shot Put,68014,1,1,0,1,0,21.85,ratified_active_anchor
+indoor,m,TJ,Triple Jump,30848,1,1,0,1,0,17.54,ratified_active_anchor
+indoor,m,WT,Weight Throw,54196,1,1,0,1,0,25.66,ratified_active_anchor
+outdoor,f,10000M,10000m,16639,2,2,0,1,1,30:46.80,pending_active_anchor
+outdoor,f,100H,100m Hurdles,92453,1,1,0,1,0,12.36,ratified_active_anchor
+outdoor,f,100M,100m,96892,2,2,0,1,1,10.63,pending_active_anchor
+outdoor,f,1500M,1500m,119058,1,1,0,1,0,3:59.90,ratified_active_anchor
+outdoor,f,200M,200m,124686,3,3,0,2,1,21.68,pending_active_anchor
+outdoor,f,3000M,3000m,18468,1,1,0,1,0,8:35.20,ratified_active_anchor
+outdoor,f,3000SC,3000m Steeplechase,29546,1,1,0,1,0,8:58.15,ratified_active_anchor
+outdoor,f,400H,400m Hurdles,61160,1,1,0,1,0,52.46,ratified_active_anchor
+outdoor,f,400M,400m,81986,3,3,0,2,1,48.79,pending_active_anchor
+outdoor,f,5000M,5000m,63448,1,1,0,1,0,14:44.79,ratified_active_anchor
+outdoor,f,800M,800m,113579,2,2,0,1,1,1:56.85,pending_active_anchor
+outdoor,f,DT,Discus Throw,66860,1,1,0,1,0,70.22,ratified_active_anchor
+outdoor,f,HEP,Heptathlon,11804,2,2,0,2,0,6755,ratified_active_anchor
+outdoor,f,HJ,High Jump,60786,3,3,0,3,0,2.03,ratified_active_anchor
+outdoor,f,HT,Hammer Throw,69393,1,1,0,1,0,77.67,ratified_active_anchor
+outdoor,f,JT,Javelin Throw,66176,1,1,0,1,0,64.19,ratified_active_anchor
+outdoor,f,LJ,Long Jump,84712,1,1,0,1,0,7.14,ratified_active_anchor
+outdoor,f,MILE,Mile,2911,2,2,0,2,0,4:23.46,ratified_active_anchor
+outdoor,f,PV,Pole Vault,47696,1,1,0,1,0,4.91,ratified_active_anchor
+outdoor,f,SP,Shot Put,77174,1,1,0,1,0,20.01,ratified_active_anchor
+outdoor,f,TJ,Triple Jump,44839,1,1,0,1,0,15.12,ratified_active_anchor
+outdoor,m,10000M,10000m,18636,2,2,0,2,0,26:50.21,ratified_active_anchor
+outdoor,m,100M,100m,92862,1,1,0,1,0,9.82,ratified_active_anchor
+outdoor,m,110H,110m Hurdles,66133,2,2,0,1,1,12.75,pending_active_anchor
+outdoor,m,1500M,1500m,113309,3,3,0,2,1,3:31.04,ratified_active_anchor
+outdoor,m,200M,200m,85641,2,2,0,1,1,19.63,pending_active_anchor
+outdoor,m,3000M,3000m,13747,1,1,0,1,0,7:30.15,ratified_active_anchor
+outdoor,m,3000SC,3000m Steeplechase,30665,2,2,0,1,1,8:05.4,ratified_active_anchor
+outdoor,m,400H,400m Hurdles,52108,1,1,0,1,0,47.02,ratified_active_anchor
+outdoor,m,400M,400m,84640,3,3,0,2,1,43.38,pending_active_anchor
+outdoor,m,5000M,5000m,63580,1,1,0,1,0,12:57.14,ratified_active_anchor
+outdoor,m,800M,800m,95167,2,2,0,2,0,1:41.77,ratified_active_anchor
+outdoor,m,DEC,Decathlon,9141,1,1,0,1,0,8961,ratified_active_anchor
+outdoor,m,DT,Discus Throw,74470,2,2,0,2,0,75.56,ratified_active_anchor
+outdoor,m,HJ,High Jump,44711,1,1,0,1,0,2.38,ratified_active_anchor
+outdoor,m,HT,Hammer Throw,54625,3,3,0,3,0,82.56,ratified_active_anchor
+outdoor,m,JT,Javelin Throw,50968,1,1,0,1,0,89.10,ratified_active_anchor
+outdoor,m,LJ,Long Jump,63052,1,1,0,1,0,8.74,ratified_active_anchor
+outdoor,m,MILE,Mile,3644,1,1,0,1,0,3:48.32,ratified_active_anchor
+outdoor,m,PV,Pole Vault,44804,3,3,0,3,0,6.00,ratified_active_anchor
+outdoor,m,SP,Shot Put,64427,1,1,0,1,0,22.00,ratified_active_anchor
+outdoor,m,TJ,Triple Jump,32072,1,1,0,1,0,17.87,ratified_active_anchor
