@@ -462,16 +462,20 @@ Relays and cross country are planned extensions rather than unfinished Milestone
 - ✅ [Milestone 3 — Production Database Audit](milestones/milestone_03_database_audit.md)
 - ✅ [Milestone 4 — Canonical Athlete Identity and D1 School Stints](milestones/milestone_04_canonical_identity_and_school_stints.md)
 - ✅ [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
-- ⏳ Milestone 6 — Exploratory Analytics and Visualization
-- ⏳ Milestone 7 — Predictive Modeling
+- ✅ [Milestone 6 — Seasonal Development Rankings and Explorer](milestones/milestone_06_seasonal_rankings_and_exploratory_analytics.md)
+- ✅ [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
 
 ---
 
 ## Current Status
 
-**Milestone 5 is complete.**
 
-The next phase will turn the analytical outputs into recruiter-friendly visualizations, interactive school profiles, and a public ranking explorer.
+<!-- MILESTONE_7_CURRENT_STATUS_START -->
+Milestones **1–7 are complete**. The current production explorer combines the
+official Enhanced Balanced Production rankings, longitudinal program trends,
+program comparisons, Event-Balanced specialized rankings, and the separate
+Average Development companion model.
+<!-- MILESTONE_7_CURRENT_STATUS_END -->
 
 <!-- MILESTONE_6_SUMMARY_START -->
 ## Milestone 6 — Seasonal Development Rankings and Explorer
@@ -524,3 +528,31 @@ data/processed/milestone6/final_development_rankings_v1/
 See the Milestone 6 document in `milestones/` for full methodology,
 validation, outputs, and interpretation limits.
 <!-- MILESTONE_6_SUMMARY_END -->
+
+<!-- MILESTONE_7_SUMMARY_START -->
+## Milestone 7 — Program Trends, Comparisons, and Specialized Rankings
+
+Milestone 7 extends the frozen Milestone 6 publication into a longitudinal
+program-analysis system.
+
+Key additions include:
+
+- exact previous-year, same-season comparisons;
+- three- and five-calendar-year trajectory windows;
+- national, conference, indoor/outdoor, event, and event-group context;
+- a final 50-table trend publication with 14 curated explorer tables;
+- 12 registered Enhanced Balanced Production specialized analyses;
+- 11 publishable specialized leaders and one explicit unavailable
+  inbound-transfer status;
+- Endpoint 90+ specialized rankings;
+- a unified Streamlit explorer with separate official and Average Development
+  model families.
+
+All Phase 7D and Phase 7E production gates passed, including 26 final trend
+publication checks and 22 specialized-ranking checks.
+
+See
+[`milestones/milestone_07_program_trends_and_specialized_rankings.md`](milestones/milestone_07_program_trends_and_specialized_rankings.md)
+for the complete methodology, validation contract, published products, and
+interpretation limits.
+<!-- MILESTONE_7_SUMMARY_END -->
