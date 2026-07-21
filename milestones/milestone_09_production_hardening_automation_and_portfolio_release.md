@@ -203,6 +203,28 @@ The `v0.9.0` dry run completed without creating a tag or GitHub Release.
 GitHub Actions run `29870894706` passed against commit
 `ec9fec366e2495cc22919f0884acf3e0de9e5d7e`.
 
+## Phase 9G — Performance, accessibility, and user experience
+
+**Status: Complete**
+
+The production explorer received a measured runtime, caching, presentation,
+and practical accessibility review.
+
+Findings:
+
+- cold startup, warm rerun, memory use, and default-page query behavior were measured;
+- the compact DuckDB and lazy cached loaders remain appropriate for production;
+- no additional query refactor was justified by the measured results;
+- tables use responsive full-width layouts, hidden indexes, and readable formatting;
+- charts include explicit axis labels and informative tooltips;
+- primary controls include understandable labels, help text, or formatting;
+- all major pages passed desktop and approximately 390-pixel viewport review;
+- wide tables scroll horizontally without breaking the page;
+- keyboard navigation using Tab, Shift+Tab, Enter, and Space remained usable;
+- focus indicators, alerts, text, tables, and chart labels remained readable.
+
+The visual review was completed against the live public Streamlit explorer.
+
 ## Milestone 9 acceptance checklist
 
 ### Repository safety
@@ -253,14 +275,14 @@ GitHub Actions run `29870894706` passed against commit
 
 ### Performance, accessibility, and user experience
 
-- [ ] Startup, warm-load, memory, and expensive-query behavior are reviewed.
-- [ ] Caching behavior is documented and regression-tested where practical.
-- [ ] Major pages are reviewed at desktop and narrow viewport widths.
-- [ ] Navigation and table presentation are understandable to a first-time
+- [x] Startup, warm-load, memory, and expensive-query behavior are reviewed.
+- [x] Caching behavior is documented and regression-tested where practical.
+- [x] Major pages are reviewed at desktop and narrow viewport widths.
+- [x] Navigation and table presentation are understandable to a first-time
       visitor.
-- [ ] Chart labels and interpretation language are clear.
-- [ ] Contrast and keyboard accessibility receive a practical review.
-- [ ] Every change is supported by a documented finding.
+- [x] Chart labels and interpretation language are clear.
+- [x] Contrast and keyboard accessibility receive a practical review.
+- [x] Every change is supported by a documented finding.
 
 ### Portfolio package
 
