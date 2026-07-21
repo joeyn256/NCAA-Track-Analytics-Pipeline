@@ -47,9 +47,15 @@ jobs:
           git ls-files '*.py' -z \
             | xargs -0 python -m py_compile
 
+      - name: Validate release shell tooling
+        run: |
+          bash -n deployment/github/publish_versioned_release.sh
+
       - name: Run targeted Ruff checks
         run: |
-          python -m ruff check tests/test_deployment_contract.py \
+          python -m ruff check scripts/prepare_public_release.py \
+            tests/test_deployment_contract.py \
+            tests/test_prepare_public_release.py \
             tests/test_explorer_app.py \
             src/apps/deployment_data.py \
             scripts/verify_public_deployment.py \
