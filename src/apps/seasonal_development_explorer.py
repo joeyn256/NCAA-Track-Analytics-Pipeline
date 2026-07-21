@@ -21,17 +21,34 @@ import duckdb
 import pandas as pd
 import streamlit as st
 
+try:
+    from src.apps.deployment_data import (
+        PUBLIC_DATABASE_PATH,
+        connect_public_db,
+        load_csv_resource,
+    )
+except ModuleNotFoundError:
+    import sys
+
+    app_directory = Path(__file__).resolve().parent
+
+    if str(app_directory) not in sys.path:
+        sys.path.insert(0, str(app_directory))
+
+    from deployment_data import (
+        PUBLIC_DATABASE_PATH,
+        connect_public_db,
+        load_csv_resource,
+    )
+
+
 
 APP_TITLE: Final = "NCAA Division I Athlete Development Explorer"
 
 ROOT = Path(__file__).resolve().parents[2]
 
 EVENT_BALANCED_SPECIALIZED_DB: Final = (
-    ROOT
-    / "data/processed/milestone7/"
-      "seasonal_program_trends_v1/"
-      "phase_7e2_event_balanced_specialized_rankings/"
-      "event_balanced_specialized_rankings_v2.duckdb"
+    PUBLIC_DATABASE_PATH
 )
 
 EVENT_BALANCED_SPECIALIZED_ANALYSES: Final = {
@@ -531,7 +548,7 @@ MILESTONE7_DATA_DIR = (
       "seasonal_program_trends_v1/"
       "phase_7d_final_publication"
 )
-MILESTONE7_DB = MILESTONE7_DATA_DIR / "seasonal_program_trends_v1.duckdb"
+MILESTONE7_DB = PUBLIC_DATABASE_PATH
 
 MILESTONE7_TABLES = {
     "program_index": "explorer_program_index",
@@ -692,6 +709,105 @@ def configure_page() -> None:
     )
 
 
+
+PERSISTENT_SELECTBOX_STATE_PREFIX: Final = (
+    "__persistent_selectbox_state__"
+)
+PERSISTENT_SELECTBOX_WIDGET_PREFIX: Final = (
+    "__persistent_selectbox_widget__"
+)
+
+
+def _store_persistent_selectbox_value(
+    widget_key: str,
+    state_key: str,
+) -> None:
+    """Copy a temporary widget value into durable session state."""
+
+    st.session_state[state_key] = st.session_state[widget_key]
+
+
+def persistent_selectbox(
+    label: str,
+    options: object,
+    *,
+    key: str,
+    index: int | None = 0,
+    **widget_options: object,
+) -> object:
+    """Render a selectbox whose value survives conditional page changes."""
+
+    option_list = list(options)
+
+    if not option_list:
+        raise ValueError(
+            f"Persistent selectbox {label!r} received no options."
+        )
+
+    semantic_key = str(key)
+    state_key = (
+        PERSISTENT_SELECTBOX_STATE_PREFIX + semantic_key
+    )
+    widget_key = (
+        PERSISTENT_SELECTBOX_WIDGET_PREFIX + semantic_key
+    )
+
+    if index is None:
+        default_value = None
+    else:
+        normalized_index = min(
+            max(int(index), 0),
+            len(option_list) - 1,
+        )
+        default_value = option_list[normalized_index]
+
+    if state_key not in st.session_state:
+        st.session_state[state_key] = default_value
+
+    preferred_value = st.session_state[state_key]
+
+    # A preferred selection may not exist in a narrower partition.
+    # Show a valid fallback without erasing the saved preference.
+    if preferred_value in option_list:
+        displayed_value = preferred_value
+    else:
+        displayed_value = default_value
+
+    st.session_state[widget_key] = displayed_value
+
+    call_options = dict(widget_options)
+
+    if displayed_value is None:
+        call_options["index"] = None
+
+    return st.selectbox(
+        label,
+        option_list,
+        key=widget_key,
+        on_change=_store_persistent_selectbox_value,
+        args=(widget_key, state_key),
+        **call_options,
+    )
+
+
+def reset_explorer_filters() -> None:
+    """Clear explorer choices while preserving the current top-level page."""
+
+    preserved_keys = {
+        "top_explorer_navigation",
+        "reset_explorer_filters",
+    }
+
+    for session_key in list(st.session_state):
+        if session_key in preserved_keys:
+            continue
+
+        if str(session_key).startswith("FormSubmitter:"):
+            continue
+
+        del st.session_state[session_key]
+
+
 @st.cache_data(show_spinner=False)
 def load_csv(
     path: str,
@@ -702,7 +818,7 @@ def load_csv(
     # Rebuilding a publication at the same path now invalidates the cache.
     del modified_ns, size_bytes
 
-    frame = pd.read_csv(path)
+    frame = load_csv_resource(path)
     for column in (
         "official_rank_eligible",
         "sample_eligible",
@@ -782,7 +898,7 @@ def select_cohort(
     *,
     key: str,
 ) -> tuple[str, dict[str, object]]:
-    cohort_label = st.selectbox(
+    cohort_label = persistent_selectbox(
         "Development cohort",
         [
             label
@@ -859,11 +975,12 @@ def ranking_controls(
         reverse=True,
     )
     with left:
-        year = st.selectbox(
+        year = persistent_selectbox(
             "Season year",
             years,
             index=0,
             help="The endpoint year of the development trajectory.",
+        key="global_season_year",
         )
 
     year_frame = frame[frame["season_year"].astype(int) == year]
@@ -873,10 +990,11 @@ def ranking_controls(
         key=lambda value: (value != "indoor", value),
     )
     with middle:
-        season_type = st.selectbox(
+        season_type = persistent_selectbox(
             "Season type",
             season_types,
             format_func=lambda value: str(value).title(),
+        key="global_season_type",
         )
 
     filtered = year_frame[
@@ -891,13 +1009,14 @@ def ranking_controls(
         ]
         if genders:
             with right:
-                gender = st.selectbox(
+                gender = persistent_selectbox(
                     "Gender",
                     sorted(genders),
                     format_func=lambda value: {
                         "m": "Men",
                         "f": "Women",
                     }.get(value, str(value)),
+                key="global_gender_scope",
                 )
             filtered = filtered[
                 filtered["gender_scope"] == gender
@@ -914,12 +1033,13 @@ def ranking_controls(
         labels = sorted(
             filtered["ranking_label"].dropna().unique()
         )
-        selected_label = st.selectbox(
+        selected_label = persistent_selectbox(
             "Event or group",
             labels,
             help=(
                 "Choose an individual event or coaching-oriented group."
             ),
+        key="average_ranking_label",
         )
         filtered = filtered[
             filtered["ranking_label"] == selected_label
@@ -967,7 +1087,7 @@ def ranking_controls(
         "Sample size": "athlete_unit_count",
     }
     with sort_col:
-        sort_label = st.selectbox(
+        sort_label = persistent_selectbox(
             "Sort by",
             list(sort_options),
             key=f"sort_{view_name}",
@@ -1288,9 +1408,117 @@ def normalize_points_frame(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-def points_frame(file_key: str) -> pd.DataFrame:
-    path = POINTS_DATA_DIR / POINTS_FILES[file_key]
-    return normalize_points_frame(load_csv_file(path))
+# BEGIN MILESTONE 8 LAZY POINT LOADING
+def official_point_table_name(file_key: str) -> str:
+    """Return the validated compact-publication table for a point resource."""
+
+    if file_key not in POINTS_FILES:
+        raise KeyError(f"Unknown points file key: {file_key}")
+
+    table_name = Path(POINTS_FILES[file_key]).stem
+
+    if not table_name.replace("_", "").isalnum():
+        raise ValueError(
+            f"Unsafe official table name derived for {file_key}: "
+            f"{table_name}"
+        )
+
+    return table_name
+
+
+@st.cache_data(show_spinner=False)
+def load_point_resource_for_model_cohort(
+    table_name: str,
+    model_key: str,
+    cohort_key: str,
+) -> pd.DataFrame:
+    """Read only one model and cohort from a public point table."""
+
+    if not table_name.replace("_", "").isalnum():
+        raise ValueError(f"Unsafe official table name: {table_name}")
+
+    with connect_public_db(
+        default_schema="official"
+    ) as connection:
+        return connection.execute(
+            f'SELECT * FROM "{table_name}" '
+            "WHERE model_key = ? AND cohort_key = ?",
+            [model_key, cohort_key],
+        ).fetchdf()
+
+
+@st.cache_data(show_spinner=False)
+def load_point_time_metadata(
+    table_name: str,
+    model_key: str,
+    cohort_key: str,
+) -> pd.DataFrame:
+    """Read only distinct time fields used to test view availability."""
+
+    if not table_name.replace("_", "").isalnum():
+        raise ValueError(f"Unsafe official table name: {table_name}")
+
+    with connect_public_db(
+        default_schema="official"
+    ) as connection:
+        columns = {
+            row[0]
+            for row in connection.execute(
+                f'DESCRIBE "{table_name}"'
+            ).fetchall()
+        }
+
+        time_columns = [
+            column
+            for column in (
+                "time_scope",
+                "season_year",
+                "season_type",
+            )
+            if column in columns
+        ]
+
+        if not time_columns:
+            return pd.DataFrame()
+
+        select_list = ", ".join(
+            f'"{column}"'
+            for column in time_columns
+        )
+
+        return connection.execute(
+            f'SELECT DISTINCT {select_list} '
+            f'FROM "{table_name}" '
+            "WHERE model_key = ? AND cohort_key = ?",
+            [model_key, cohort_key],
+        ).fetchdf()
+
+
+def points_frame(
+    file_key: str,
+    *,
+    model_key: str | None = None,
+    cohort_key: str | None = None,
+) -> pd.DataFrame:
+    """Load a point resource, optionally filtered early in DuckDB."""
+
+    if (model_key is None) != (cohort_key is None):
+        raise ValueError(
+            "model_key and cohort_key must be supplied together."
+        )
+
+    if model_key is not None and cohort_key is not None:
+        frame = load_point_resource_for_model_cohort(
+            official_point_table_name(file_key),
+            model_key,
+            cohort_key,
+        )
+    else:
+        path = POINTS_DATA_DIR / POINTS_FILES[file_key]
+        frame = load_csv_file(path)
+
+    return normalize_points_frame(frame)
+# END MILESTONE 8 LAZY POINT LOADING
 
 
 def model_registry_frame() -> pd.DataFrame:
@@ -1418,18 +1646,26 @@ def available_point_views(
     cohort_key: str,
     time_label: str,
 ) -> list[str]:
+    """Return point views using only distinct time metadata."""
+
     views: list[str] = []
 
-    # Checking the selected files also protects the interface from schema or
-    # publication differences between broad and sparse elite cohorts.
     for view_name, file_key in POINT_VIEW_FILES.items():
-        frame = points_frame(file_key)
-        frame = frame[
-            (frame["model_key"] == model_key)
-            & (frame["cohort_key"] == cohort_key)
-        ].copy()
-        frame = filter_point_time(frame, time_label)
-        if not frame.empty:
+        metadata = load_point_time_metadata(
+            official_point_table_name(file_key),
+            model_key,
+            cohort_key,
+        )
+
+        if metadata.empty:
+            continue
+
+        metadata = filter_point_time(
+            metadata,
+            time_label,
+        )
+
+        if not metadata.empty:
             views.append(view_name)
 
     return views
@@ -1482,7 +1718,7 @@ def official_rankings_page() -> None:
         0,
     )
 
-    model_label = st.selectbox(
+    model_label = persistent_selectbox(
         "Scoring model",
         model_labels,
         index=default_model_index,
@@ -1507,14 +1743,14 @@ def official_rankings_page() -> None:
             "negative-pool cap."
         )
 
-    cohort_label = st.selectbox(
+    cohort_label = persistent_selectbox(
         "Development cohort",
         [
             label
             for label, cohort_value in POINT_COHORT_KEYS.items()
             if cohort_value not in MILESTONE7_EXCLUDED_COHORT_KEYS
         ],
-        key=f"points_cohort_{model_key}",
+        key="points_cohort",
     )
     cohort_key = POINT_COHORT_KEYS[cohort_label]
 
@@ -1525,10 +1761,10 @@ def official_rankings_page() -> None:
         )
         return
 
-    time_label = st.selectbox(
+    time_label = persistent_selectbox(
         "Time view",
         time_options,
-        key=f"points_time_{model_key}_{cohort_key}",
+        key="points_time",
     )
 
     views = available_point_views(model_key, cohort_key, time_label)
@@ -1538,19 +1774,22 @@ def official_rankings_page() -> None:
         )
         return
 
-    view = st.selectbox(
+    view = persistent_selectbox(
         "Points view",
         views,
-        key=f"points_view_{model_key}_{cohort_key}_{time_label}",
+        key="points_view",
     )
 
     file_key = POINT_VIEW_FILES[view]
-    frame = points_frame(file_key)
-    frame = frame[
-        (frame["model_key"] == model_key)
-        & (frame["cohort_key"] == cohort_key)
-    ].copy()
-    frame = filter_point_time(frame, time_label)
+    frame = points_frame(
+        file_key,
+        model_key=model_key,
+        cohort_key=cohort_key,
+    )
+    frame = filter_point_time(
+        frame,
+        time_label,
+    )
 
     if frame.empty:
         st.warning(
@@ -1569,10 +1808,10 @@ def official_rankings_page() -> None:
             st.warning("No endpoint years are available.")
             return
 
-        year = st.selectbox(
+        year = persistent_selectbox(
             "Endpoint year",
             years,
-            key=f"points_year_{cohort_key}_{view}",
+            key="global_season_year",
         )
 
         year_frame = frame[
@@ -1587,11 +1826,11 @@ def official_rankings_page() -> None:
             st.warning("No season types are available for this year.")
             return
 
-        season_type = st.selectbox(
+        season_type = persistent_selectbox(
             "Season type",
             season_types,
             format_func=lambda value: str(value).title(),
-            key=f"points_season_{cohort_key}_{view}_{year}",
+            key="global_season_type",
         )
 
         frame = year_frame[
@@ -1612,11 +1851,11 @@ def official_rankings_page() -> None:
             st.warning("No genders are available for this selection.")
             return
 
-        gender = st.selectbox(
+        gender = persistent_selectbox(
             "Gender",
             genders,
             format_func=format_gender,
-            key=f"points_gender_{cohort_key}_{view}_{selected_period}",
+            key="global_gender_scope",
         )
         frame = frame[frame["gender_scope"] == gender].copy()
 
@@ -1628,7 +1867,7 @@ def official_rankings_page() -> None:
             st.warning("No championship events are available.")
             return
 
-        event = st.selectbox(
+        event = persistent_selectbox(
             "Championship event",
             events,
             key=(
@@ -1651,7 +1890,7 @@ def official_rankings_page() -> None:
             st.warning("No coaching groups are available.")
             return
 
-        group = st.selectbox(
+        group = persistent_selectbox(
             "Coaching group",
             groups,
             key=(
@@ -2182,14 +2421,14 @@ def all_time_average_controls(
             frame["canonical_gender_code"].dropna().unique()
         )
         with left:
-            gender = st.selectbox(
+            gender = persistent_selectbox(
                 "Gender",
                 genders,
                 format_func=lambda value: {
                     "m": "Men",
                     "f": "Women",
                 }.get(str(value), str(value)),
-                key="all_time_average_event_gender",
+                key="global_gender_scope",
             )
         frame = frame[
             frame["canonical_gender_code"] == gender
@@ -2197,7 +2436,7 @@ def all_time_average_controls(
 
         families = sorted(frame["event_family"].dropna().unique())
         with right:
-            event_family = st.selectbox(
+            event_family = persistent_selectbox(
                 "Event family",
                 families,
                 key="all_time_average_event_family",
@@ -2253,7 +2492,7 @@ def all_time_average_controls(
     }
 
     with sort_col:
-        sort_label = st.selectbox(
+        sort_label = persistent_selectbox(
             "Sort by",
             list(available_sort_options),
             key=f"all_time_sort_{view_name}",
@@ -2432,7 +2671,7 @@ def all_time_average_page() -> None:
         "school, independent of endpoint season."
     )
 
-    view_name = st.selectbox(
+    view_name = persistent_selectbox(
         "All-time ranking view",
         list(ALL_TIME_AVERAGE_FILES),
         key="all_time_average_view",
@@ -2571,7 +2810,7 @@ def additional_rankings_page() -> None:
 
     st.divider()
 
-    analysis_name = st.selectbox(
+    analysis_name = persistent_selectbox(
         "Additional ranking",
         list(SUPPLEMENTAL_ANALYSES),
         key="supplemental_ranking_analysis_v4",
@@ -2728,10 +2967,7 @@ def load_event_balanced_specialized_table(
     if not EVENT_BALANCED_SPECIALIZED_DB.exists():
         return pd.DataFrame()
 
-    connection = duckdb.connect(
-        str(EVENT_BALANCED_SPECIALIZED_DB),
-        read_only=True,
-    )
+    connection = connect_public_db(default_schema="specialized")
     try:
         return connection.execute(
             f'SELECT * FROM "{table_name}"'
@@ -2933,7 +3169,7 @@ def event_balanced_specialized_rankings_page() -> None:
 
     st.divider()
 
-    analysis_name = st.selectbox(
+    analysis_name = persistent_selectbox(
         "Specialized ranking",
         list(EVENT_BALANCED_SPECIALIZED_ANALYSES),
         key="event_balanced_specialized_analysis_v6",
@@ -3103,10 +3339,10 @@ def rankings_page() -> None:
     )
 
     cohort_label, config = select_cohort(
-        key="rankings_cohort",
+        key="average_development_cohort",
     )
 
-    view_name = st.selectbox(
+    view_name = persistent_selectbox(
         "Seasonal ranking view",
         list(config["files"]),
         key=f"ranking_view_{cohort_label}",
@@ -3138,7 +3374,7 @@ def school_profile_page() -> None:
     )
 
     cohort_label, config = select_cohort(
-        key="school_profile_cohort",
+        key="average_development_cohort",
     )
 
     overall = prepare_relative_score(
@@ -3164,7 +3400,7 @@ def school_profile_page() -> None:
         st.info("No school matched that search.")
         return
 
-    selected_school = st.selectbox(
+    selected_school = persistent_selectbox(
         "School",
         matching,
         key=f"school_select_{cohort_label}",
@@ -3305,7 +3541,7 @@ def school_profile_page() -> None:
         st.info("No overall seasonal rows are available.")
         return
 
-    selected_season = st.selectbox(
+    selected_season = persistent_selectbox(
         "Choose season",
         seasons,
         key=f"school_season_{cohort_label}",
@@ -3388,7 +3624,7 @@ def season_summary_page() -> None:
     st.subheader("Season and Coverage Summary")
 
     cohort_label, config = select_cohort(
-        key="coverage_cohort",
+        key="average_development_cohort",
     )
 
     coverage = cohort_frame(
@@ -3427,7 +3663,7 @@ def season_summary_page() -> None:
         config["partition_file"],
     )
 
-    scope = st.selectbox(
+    scope = persistent_selectbox(
         "Scope",
         sorted(partitions["ranking_scope"].unique()),
         key=f"coverage_scope_{cohort_label}",
@@ -3534,7 +3770,7 @@ def model_diagnostics_page() -> None:
         cohort_labels = sorted(
             frame["cohort_label"].dropna().unique()
         )
-        cohort = st.selectbox(
+        cohort = persistent_selectbox(
             "Comparison cohort",
             cohort_labels,
             key="diag_compare_cohort",
@@ -3542,7 +3778,7 @@ def model_diagnostics_page() -> None:
         filtered = frame[frame["cohort_label"] == cohort].copy()
 
         time_scopes = sorted(filtered["time_scope"].dropna().unique())
-        time_scope = st.selectbox(
+        time_scope = persistent_selectbox(
             "Comparison time scope",
             time_scopes,
             key="diag_compare_time",
@@ -3556,7 +3792,7 @@ def model_diagnostics_page() -> None:
                 filtered["season_year"].dropna().astype(int).unique(),
                 reverse=True,
             )
-            year = st.selectbox(
+            year = persistent_selectbox(
                 "Comparison year",
                 years,
                 key="diag_compare_year",
@@ -3592,7 +3828,7 @@ def model_diagnostics_page() -> None:
     with tab_negative:
         frame = points_frame("event_budget_audit")
         models = sorted(frame["model_label"].dropna().unique())
-        model = st.selectbox(
+        model = persistent_selectbox(
             "Negative-pool model",
             models,
             key="diag_negative_model",
@@ -3652,7 +3888,7 @@ def model_diagnostics_page() -> None:
     with tab_concentration:
         frame = points_frame("concentration")
         models = sorted(frame["model_label"].dropna().unique())
-        model = st.selectbox(
+        model = persistent_selectbox(
             "Concentration model",
             models,
             key="diag_concentration_model",
@@ -3710,7 +3946,7 @@ def model_diagnostics_page() -> None:
     with tab_roster:
         frame = points_frame("roster_dependence")
         models = sorted(frame["model_label"].dropna().unique())
-        model = st.selectbox(
+        model = persistent_selectbox(
             "Roster audit model",
             models,
             key="diag_roster_model",
@@ -3746,7 +3982,7 @@ def model_diagnostics_page() -> None:
     with tab_elite:
         frame = points_frame("elite_reward")
         models = sorted(frame["model_label"].dropna().unique())
-        model = st.selectbox(
+        model = persistent_selectbox(
             "Elite-reward model",
             models,
             key="diag_elite_model",
@@ -3899,7 +4135,7 @@ def load_milestone7_table(
     if table_name not in allowed:
         raise ValueError(f"Unregistered Milestone 7 table: {table_name}")
 
-    connection = duckdb.connect(database_path, read_only=True)
+    connection = connect_public_db(default_schema="trends")
     try:
         return connection.execute(
             f"SELECT * FROM {table_name}"
@@ -4016,11 +4252,11 @@ def select_program_partition(
             key=lambda value: (value != "outdoor", value),
         )
         with c1:
-            season_type = st.selectbox(
+            season_type = persistent_selectbox(
                 "Season type",
                 season_types,
                 format_func=lambda value: str(value).title(),
-                key=f"{key_prefix}_season_type_v3",
+                key="global_season_type",
             )
         filtered = filtered[
             filtered["season_type"].astype(str) == season_type
@@ -4029,11 +4265,11 @@ def select_program_partition(
 
         scopes = sorted(filtered["ranking_scope"].dropna().astype(str).unique())
         with c2:
-            ranking_scope = st.selectbox(
+            ranking_scope = persistent_selectbox(
                 "Ranking scope",
                 scopes,
                 format_func=friendly_scope,
-                key=f"{key_prefix}_scope_v3",
+                key="m7_ranking_scope",
             )
         filtered = filtered[
             filtered["ranking_scope"].astype(str) == ranking_scope
@@ -4042,11 +4278,11 @@ def select_program_partition(
 
         genders = sorted(filtered["gender_scope"].dropna().astype(str).unique())
         with c3:
-            gender_scope = st.selectbox(
+            gender_scope = persistent_selectbox(
                 "Gender",
                 genders,
                 format_func=format_gender,
-                key=f"{key_prefix}_gender_v3",
+                key="global_gender_scope",
             )
         filtered = filtered[
             filtered["gender_scope"].astype(str) == gender_scope
@@ -4094,11 +4330,11 @@ def select_program_partition(
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            cohort_key = st.selectbox(
+            cohort_key = persistent_selectbox(
                 "Development cohort",
                 cohort_keys,
                 format_func=lambda value: label_map.get(str(value), str(value)),
-                key=f"{key_prefix}_cohort_v3",
+                key="m7_development_cohort",
             )
         filtered = filtered[
             filtered["cohort_key"].astype(str) == str(cohort_key)
@@ -4110,11 +4346,11 @@ def select_program_partition(
 
         windows = sorted(filtered["window_years"].dropna().astype(int).unique())
         with c2:
-            window_years = st.selectbox(
+            window_years = persistent_selectbox(
                 "Trend window",
                 windows,
                 format_func=lambda value: f"{int(value)} calendar years",
-                key=f"{key_prefix}_window_v3",
+                key="m7_trend_window",
             )
         filtered = filtered[
             filtered["window_years"].astype(int) == int(window_years)
@@ -4142,11 +4378,11 @@ def select_program_partition(
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        cohort_key = st.selectbox(
+        cohort_key = persistent_selectbox(
             "Development cohort",
             cohort_keys,
             format_func=lambda value: label_map.get(str(value), str(value)),
-            key=f"{key_prefix}_cohort",
+            key="m7_development_cohort",
         )
     filtered = filtered[
         filtered["cohort_key"].astype(str) == str(cohort_key)
@@ -4158,11 +4394,11 @@ def select_program_partition(
 
     scopes = sorted(filtered["ranking_scope"].dropna().astype(str).unique())
     with c2:
-        ranking_scope = st.selectbox(
+        ranking_scope = persistent_selectbox(
             "Ranking scope",
             scopes,
             format_func=friendly_scope,
-            key=f"{key_prefix}_scope",
+            key="m7_ranking_scope",
         )
     filtered = filtered[
         filtered["ranking_scope"].astype(str) == ranking_scope
@@ -4171,11 +4407,11 @@ def select_program_partition(
 
     genders = sorted(filtered["gender_scope"].dropna().astype(str).unique())
     with c3:
-        gender_scope = st.selectbox(
+        gender_scope = persistent_selectbox(
             "Gender",
             genders,
             format_func=format_gender,
-            key=f"{key_prefix}_gender",
+            key="global_gender_scope",
         )
     filtered = filtered[
         filtered["gender_scope"].astype(str) == gender_scope
@@ -4188,11 +4424,11 @@ def select_program_partition(
         key=lambda value: (value != "outdoor", value),
     )
     with c1:
-        season_type = st.selectbox(
+        season_type = persistent_selectbox(
             "Season type",
             season_types,
             format_func=lambda value: str(value).title(),
-            key=f"{key_prefix}_season_type",
+            key="global_season_type",
         )
     filtered = filtered[
         filtered["season_type"].astype(str) == season_type
@@ -4201,11 +4437,11 @@ def select_program_partition(
 
     windows = sorted(filtered["window_years"].dropna().astype(int).unique())
     with c2:
-        window_years = st.selectbox(
+        window_years = persistent_selectbox(
             "Trend window",
             windows,
             format_func=lambda value: f"{int(value)} calendar years",
-            key=f"{key_prefix}_window",
+            key="m7_trend_window",
         )
     filtered = filtered[
         filtered["window_years"].astype(int) == int(window_years)
@@ -4218,10 +4454,10 @@ def select_program_partition(
             reverse=True,
         )
         with c3:
-            endpoint_year = st.selectbox(
+            endpoint_year = persistent_selectbox(
                 "Endpoint year",
                 endpoints,
-                key=f"{key_prefix}_endpoint",
+                key="global_season_year",
             )
         filtered = filtered[
             filtered["endpoint_year"].astype(int) == int(endpoint_year)
@@ -4259,7 +4495,7 @@ def program_trends_page() -> None:
         st.info("No schools are available for this partition.")
         return
 
-    school_name = st.selectbox(
+    school_name = persistent_selectbox(
         "School",
         schools["school_name"].astype(str).tolist(),
         key="m7_trends_school",
@@ -4540,7 +4776,7 @@ def program_comparison_page() -> None:
 
     left, right = st.columns(2)
     with left:
-        school_a = st.selectbox(
+        school_a = persistent_selectbox(
             "School A",
             school_names,
             index=0,
@@ -4548,7 +4784,7 @@ def program_comparison_page() -> None:
         )
     remaining = [name for name in school_names if name != school_a]
     with right:
-        school_b = st.selectbox(
+        school_b = persistent_selectbox(
             "School B",
             remaining,
             index=0,
@@ -4718,6 +4954,68 @@ def main() -> None:
     require_data()
 
     st.title(APP_TITLE)
+
+    # BEGIN MILESTONE 8 RECRUITER HOMEPAGE
+    st.markdown(
+        """
+    **Start here:**
+
+    1. Open **Official Rankings** to compare NCAA Division I programs using
+       **Enhanced Balanced Production**, the official model.
+    2. Then open **Program Trends** or **Program Comparison** to see how a
+       school developed athletes across seasons, event groups, and peers.
+    """
+    )
+
+    recruiter_metric_columns = st.columns(4)
+    recruiter_metric_columns[0].metric(
+        "Performances",
+        "6,594,540",
+    )
+    recruiter_metric_columns[1].metric(
+        "Athletes",
+        "193,961",
+    )
+    recruiter_metric_columns[2].metric(
+        "Institutions",
+        "554",
+    )
+    recruiter_metric_columns[3].metric(
+        "Deployment tables",
+        "81",
+    )
+
+    st.caption(
+        "A production analytics project built with Python, DuckDB, "
+        "Pandas, Streamlit, reproducible publication contracts, and "
+        "exact source-to-deployment parity validation."
+    )
+
+    st.link_button(
+        "View the project on GitHub",
+        "https://github.com/joeyn256/NCAA-Track-Analytics-Pipeline",
+    )
+
+    with st.expander(
+        "Scope and known limitations",
+        expanded=False,
+    ):
+        st.markdown(
+            """
+    - **2020 Outdoor:** the canceled NCAA outdoor season is represented only
+      through explicit frozen-source coverage or unavailable rows. The app
+      does not interpolate, carry forward, or fabricate performances.
+    - **Inbound transfer development:** this specialized analysis is
+      explicitly unavailable in public deployment v1 because the validated
+      evidence contract did not support a defensible ranking.
+    - **Interpretation:** these are athlete-development rankings, not
+      projected NCAA championship points or recruiting guarantees.
+    - **Model hierarchy:** Enhanced Balanced Production is the official
+      model. Original Balanced Production and Average Development remain
+      clearly labeled companion views for robustness and comparison.
+    """
+        )
+    # END MILESTONE 8 RECRUITER HOMEPAGE
     st.caption(
         "Official NCAA Division I development rankings, Milestone 7 "
         "program trajectories, peer comparisons, and preserved companion "
@@ -4769,6 +5067,22 @@ def main() -> None:
     page = MILESTONE7_NAVIGATION[navigation_label]
 
     with st.sidebar:
+        if st.button(
+            "Reset explorer filters",
+            key="reset_explorer_filters",
+            help=(
+                "Restore explorer criteria to their default values "
+                "without clearing the loaded data cache."
+            ),
+        ):
+            reset_explorer_filters()
+            st.rerun()
+
+        st.caption(
+            "Filter selections are retained while you move between "
+            "schools and explorer sections."
+        )
+        st.divider()
         st.header("About")
         st.markdown(
             """
