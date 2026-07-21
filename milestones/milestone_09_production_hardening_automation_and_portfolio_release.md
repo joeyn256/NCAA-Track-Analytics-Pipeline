@@ -157,6 +157,26 @@ The first Phase 9D CI validation, GitHub Actions run `29869694068`, completed
 successfully against commit
 `4e362d02cfaf200a71c1e88c7c10938716d59995`.
 
+## Phase 9E — Deployment contract consistency
+
+**Status: Complete**
+
+The repository now includes deterministic tests that treat
+`deployment/public_deployment_v1.json` as the canonical public deployment
+contract and verify consistency across:
+
+- compact-publication loader checksums and database filename;
+- GitHub release tag, page, and asset URL;
+- release publication script paths and immutable v1 configuration;
+- Streamlit secrets example and deployment documentation;
+- compressed and uncompressed artifact sizes;
+- release notes and README publication metadata;
+- Python version, Streamlit entrypoint, and referenced configuration paths.
+
+The first Phase 9E CI validation, GitHub Actions run `29870082072`, completed
+successfully against commit
+`4e842d904781f9cb82810d817b30e7ada6cfac45`.
+
 ## Milestone 9 acceptance checklist
 
 ### Repository safety
@@ -178,7 +198,7 @@ successfully against commit
 - [x] All tracked production Python files pass syntax compilation.
 - [x] Deterministic unit tests cover the compact-publication loader.
 - [x] Streamlit smoke tests use safe fixtures or controlled mocks.
-- [ ] Deployment-descriptor and documentation consistency checks pass.
+- [x] Deployment-descriptor and documentation consistency checks pass.
 - [x] Secret-pattern and oversized-file checks pass.
 - [x] The CI workflow is fast enough for normal pull requests and pushes.
 
