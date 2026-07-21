@@ -1,0 +1,4 @@
+# Milestone 9 development and CI tooling
+pytest==8.4.2
+ruff==0.15.22
+coverage==7.15.2
