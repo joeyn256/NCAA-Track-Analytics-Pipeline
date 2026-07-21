@@ -134,6 +134,29 @@ supports manual execution. Its first manual production run, GitHub Actions run
 `29868630162`, completed successfully against commit
 `c6f8bafbe280e5d7583da2ba119f5051083f89bb`.
 
+## Phase 9D — Explorer regression coverage
+
+**Status: Complete**
+
+The repository now includes a deterministic Streamlit `AppTest` backed by a
+synthetic temporary DuckDB fixture. The test runs without private datasets,
+ignored production databases, or Milestone 5 and Milestone 6 CSV files.
+
+The regression test verifies:
+
+- the application starts successfully with the safe compact fixture;
+- the recruiter-facing homepage and default Official Rankings page render;
+- Enhanced Balanced Production is selected and labeled as the official model;
+- all required top-level navigation destinations remain available;
+- Endpoint 90+ remains selectable while sparse Endpoint 95+ remains hidden;
+- missing 2020 Outdoor handling remains explicit;
+- inbound-transfer development remains explicitly unavailable;
+- the default all-time combined ranking table renders without exceptions.
+
+The first Phase 9D CI validation, GitHub Actions run `29869694068`, completed
+successfully against commit
+`4e362d02cfaf200a71c1e88c7c10938716d59995`.
+
 ## Milestone 9 acceptance checklist
 
 ### Repository safety
@@ -154,22 +177,22 @@ supports manual execution. Its first manual production run, GitHub Actions run
 - [x] CI uses Python 3.12.
 - [x] All tracked production Python files pass syntax compilation.
 - [x] Deterministic unit tests cover the compact-publication loader.
-- [ ] Streamlit smoke tests use safe fixtures or controlled mocks.
+- [x] Streamlit smoke tests use safe fixtures or controlled mocks.
 - [ ] Deployment-descriptor and documentation consistency checks pass.
 - [x] Secret-pattern and oversized-file checks pass.
 - [x] The CI workflow is fast enough for normal pull requests and pushes.
 
 ### Explorer regression coverage
 
-- [ ] The application starts with a safe compact database fixture.
-- [ ] The default recruiter-facing page renders without exceptions.
-- [ ] Enhanced Balanced Production is identified as the official model.
-- [ ] Required navigation destinations remain available.
-- [ ] Endpoint 90+ and Endpoint 95+ wording remains correct.
-- [ ] Missing 2020 Outdoor handling remains explicit.
-- [ ] Unavailable inbound-transfer handling remains explicit.
+- [x] The application starts with a safe compact database fixture.
+- [x] The default recruiter-facing page renders without exceptions.
+- [x] Enhanced Balanced Production is identified as the official model.
+- [x] Required navigation destinations remain available.
+- [x] Endpoint 90+ and Endpoint 95+ wording remains correct.
+- [x] Missing 2020 Outdoor handling remains explicit.
+- [x] Unavailable inbound-transfer handling remains explicit.
 - [x] Loader cache, checksum, download, and failure behavior are tested.
-- [ ] Runtime has no dependency on ignored Milestone 5 or Milestone 6 CSV files.
+- [x] Runtime has no dependency on ignored Milestone 5 or Milestone 6 CSV files.
 
 ### Release automation
 
