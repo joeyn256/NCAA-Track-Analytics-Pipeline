@@ -18,7 +18,7 @@ application.
 
 ## Walkthrough sequence
 
-### 1. Recruiter-facing homepage — 30 seconds
+### 1. Public-facing homepage — 30 seconds
 
 Show the project title, headline scale metrics, public model hierarchy, and
 official ranking table.

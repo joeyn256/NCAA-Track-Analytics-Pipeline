@@ -145,7 +145,7 @@ ignored production databases, or Milestone 5 and Milestone 6 CSV files.
 The regression test verifies:
 
 - the application starts successfully with the safe compact fixture;
-- the recruiter-facing homepage and default Official Rankings page render;
+- the public-facing homepage and default Official Rankings page render;
 - Enhanced Balanced Production is selected and labeled as the official model;
 - all required top-level navigation destinations remain available;
 - Endpoint 90+ remains selectable while sparse Endpoint 95+ remains hidden;
@@ -225,21 +225,21 @@ Findings:
 
 The visual review was completed against the live public Streamlit explorer.
 
-## Phase 9H — Portfolio and career package
+## Phase 9H — Project documentation package
 
 **Status: Complete**
 
-Recruiter-facing materials now include:
+Public project documentation now includes:
 
 - a concise project case study;
 - Mermaid system, deployment, and analytical data-flow visuals;
 - a three-to-five-minute demo and recording guide;
 - technical and nontechnical project summaries;
-- defensible résumé bullets;
-- LinkedIn and portfolio descriptions;
-- graduate-school application language;
-- 30-second and two-minute interview explanations;
-- STAR-format examples covering identity resolution, event fairness, and
+- concise contribution highlights;
+- short and detailed project descriptions;
+- academic motivation and project context;
+- 30-second and two-minute project explanations;
+- engineering examples covering identity resolution, event fairness, and
   production deployment;
 - a safe screenshot capture guide with three required application views.
 
@@ -278,7 +278,7 @@ application screenshots listed in `docs/portfolio/SCREENSHOT_GUIDE.md`.
 ### Explorer regression coverage
 
 - [x] The application starts with a safe compact database fixture.
-- [x] The default recruiter-facing page renders without exceptions.
+- [x] The default public-facing page renders without exceptions.
 - [x] Enhanced Balanced Production is identified as the official model.
 - [x] Required navigation destinations remain available.
 - [x] Endpoint 90+ and Endpoint 95+ wording remains correct.
@@ -320,25 +320,25 @@ application screenshots listed in `docs/portfolio/SCREENSHOT_GUIDE.md`.
       documented.
 - [x] Public links are prominent and correct.
 
-### Career materials
+### Project communication
 
-- [x] Résumé bullets are accurate and defensible.
-- [x] LinkedIn and portfolio descriptions are complete.
-- [x] Graduate-school application language is complete.
-- [x] Interview talking points include a 30-second and two-minute explanation.
-- [x] STAR-format project examples are documented.
+- [x] Contribution highlights are accurate and defensible.
+- [x] Short and detailed project descriptions are complete.
+- [x] Academic motivation and project context are documented.
+- [x] A 30-second and two-minute project explanation are documented.
+- [x] Engineering challenge-and-solution examples are documented.
 - [x] No claims exaggerate causality, accuracy, traffic, adoption, or business
       impact.
 
-### Final recruiter test and release
+### Final public review and release
 
-- [ ] A new visitor can understand the project from the README.
-- [ ] The live application opens from the prominent project link.
-- [ ] The official model and companion models are understandable.
-- [ ] Rankings, trends, methodology, and limitations are discoverable.
-- [ ] Technical scale, architecture, testing, and reproducibility are visible.
-- [ ] Individual technical contributions are clearly stated.
-- [ ] Portfolio and résumé language is easy to locate.
+- [x] A new visitor can understand the project from the README.
+- [x] The live application opens from the prominent project link.
+- [x] The official model and companion models are understandable.
+- [x] Rankings, trends, methodology, and limitations are discoverable.
+- [x] Technical scale, architecture, testing, and reproducibility are visible.
+- [x] Individual technical contributions are clearly stated.
+- [x] Project summaries and contribution highlights are easy to locate.
 - [ ] All automated and manual release gates pass.
 - [ ] The final release commit is clean, synchronized, and documented.
 - [ ] Only then may a new `v1.0.0` tag and GitHub Release be considered.

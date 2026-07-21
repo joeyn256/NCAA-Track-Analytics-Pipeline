@@ -1,20 +1,18 @@
 # NCAA Track Analytics Pipeline
 
 
-<!-- PORTFOLIO_PACKAGE_START -->
-## Portfolio and recruiter resources
+## Project resources
 
 - **[Open the live explorer](https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/)**
-- [Read the concise case study](docs/portfolio/CASE_STUDY.md)
+- [Read the project case study](docs/portfolio/CASE_STUDY.md)
 - [Review the architecture and data flow](docs/portfolio/ARCHITECTURE_AND_DATA_FLOW.md)
+- [View project summaries and engineering notes](docs/portfolio/PROJECT_SUMMARIES.md)
+- [See the application images](docs/portfolio/README.md)
 - [Use the demo and recording guide](docs/portfolio/DEMO_AND_RECORDING_GUIDE.md)
-- [View résumé, LinkedIn, graduate-school, and interview language](docs/portfolio/CAREER_MATERIALS.md)
-- [Portfolio package index](docs/portfolio/README.md)
 
 The official model is **Enhanced Balanced Production**. Original Balanced
 Production v4.1 and Average Athlete Development remain companion views. The
 rankings are observational and do not establish causal coaching effects.
-<!-- PORTFOLIO_PACKAGE_END -->
 
 A production analytics system for measuring how NCAA Division I track and field
 programs develop athletes over time.
@@ -54,7 +52,7 @@ validated deployment tables**.
 | Source-to-deployment parity | **81 of 81 tables** |
 | Public deployment rows | **2,918,594** |
 | Championship event budget | **100,000 positive points per event** |
-| Recruiter-readiness score | **100/100** |
+| Visitor-readiness score | **100/100** |
 | Cloud-only startup | **Passed** |
 
 The explorer includes Official Rankings, Athlete Contributions, Individual
@@ -282,7 +280,7 @@ The final pre-release audit completed on July 21, 2026.
 | Exact source-to-deployment parity | 81 of 81 tables |
 | Source and deployment resource rows | 2,918,594 each |
 | Full release-readiness validators | 7 of 7 passed |
-| Recruiter-readiness score | 100 of 100 |
+| Visitor-readiness score | 100 of 100 |
 | Default-page median memory | 0.289 GiB |
 | Default-page maximum memory | 0.290 GiB |
 | Athlete Contributions maximum memory | 1.684 GiB |
@@ -376,7 +374,7 @@ milestones/
 ├── milestone_05_athlete_development_rankings.md
 ├── milestone_06_seasonal_rankings_and_exploratory_analytics.md
 ├── milestone_07_program_trends_and_specialized_rankings.md
-└── milestone_08_public_deployment_and_recruiter_experience.md
+└── milestone_08_public_deployment_and_visitor_experience.md
 ```
 
 Generated raw data, processed publications, caches, and DuckDB databases are
@@ -454,7 +452,7 @@ Detailed methodology and audit evidence are available in the milestone files:
 - [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
 - [Milestone 6 — Seasonal Rankings and Explorer](milestones/milestone_06_seasonal_rankings_and_exploratory_analytics.md)
 - [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
-- [Milestone 8 — Public Deployment and Recruiter Experience](milestones/milestone_08_public_deployment_and_recruiter_experience.md)
+- [Milestone 8 — Public Deployment and Visitor Experience](milestones/milestone_08_public_deployment_and_user_experience.md)
 - [Milestone 9 — Production Hardening, Automation, and Portfolio Release](milestones/milestone_09_production_hardening_automation_and_portfolio_release.md)
 - [Streamlit Community Cloud deployment guide](deployment/STREAMLIT_COMMUNITY_CLOUD.md)
 

@@ -168,7 +168,7 @@ documentation.
 
 The finished project provides:
 
-- a live recruiter-accessible explorer;
+- a live publicly accessible explorer;
 - an official production ranking and two companion models;
 - program trend and comparison tools;
 - transparent methodology and limitations;

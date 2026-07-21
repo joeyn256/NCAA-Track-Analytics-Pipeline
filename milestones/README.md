@@ -1,7 +1,7 @@
 # Project Milestones
 
 This directory contains the technical record of the NCAA Track Analytics
-Pipeline. The root [`README.md`](../README.md) is the recruiter-friendly
+Pipeline. The root [`README.md`](../README.md) is the visitor-friendly
 overview; these pages document the engineering decisions, validation
 evidence, and reproducible outputs behind each result.
 
@@ -18,7 +18,7 @@ evidence, and reproducible outputs behind each result.
 
 ## Recommended Reading Paths
 
-### Recruiter or admissions review
+### Visitor or admissions review
 
 1. Start with the root [`README.md`](../README.md).
 2. Read the **At a Glance** section at the top of each milestone.
@@ -74,5 +74,5 @@ Major phases publish only after:
 
 - [Milestone 6 — Seasonal Development Rankings and Explorer](milestone_06_seasonal_rankings_and_exploratory_analytics.md)
 - [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestone_07_program_trends_and_specialized_rankings.md)
-- [Milestone 8 — Public Deployment and Recruiter Experience](milestone_08_public_deployment_and_recruiter_experience.md)
+- [Milestone 8 — Public Deployment and Visitor Experience](milestone_08_public_deployment_and_visitor_experience.md)
 - [Milestone 9 — Production Hardening, Automation, and Portfolio Release](milestone_09_production_hardening_automation_and_portfolio_release.md)

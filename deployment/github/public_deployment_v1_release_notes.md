@@ -37,7 +37,7 @@ The release candidate passed:
 - fresh-environment download and atomic decompression;
 - Streamlit AppTest with zero exceptions, errors, or warnings;
 - 7 of 7 full release-readiness validators;
-- recruiter-readiness score of 100 out of 100;
+- visitor-readiness score of 100 out of 100;
 - default-page maximum memory of 0.290 GiB;
 - Athlete Contributions maximum memory of 1.684 GiB;
 - Individual Event maximum memory of 0.393 GiB;

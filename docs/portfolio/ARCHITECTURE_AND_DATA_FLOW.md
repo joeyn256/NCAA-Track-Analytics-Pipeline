@@ -20,7 +20,7 @@ flowchart LR
     L --> M[Compact public DuckDB]
     M --> N[Portable checksum-verified loader]
     N --> O[Streamlit explorer]
-    O --> P[Public recruiter experience]
+    O --> P[Public user experience]
 ```
 
 ## Deployment architecture

@@ -1,11 +1,11 @@
-# Milestone 8 — Public Deployment and Recruiter Experience
+# Milestone 8 — Public Deployment and User Experience
 
 ## Status
 
 **Complete — public deployment live**
 
 Milestone 8 converts the local NCAA Division I Athlete Development Explorer
-into a portable, recruiter-accessible web application.
+into a portable, publicly accessible web application.
 
 The controlled Git merge, immutable GitHub Release, Streamlit Community
 Cloud deployment, clean cloud-runtime validation, anonymous-browser smoke test,
@@ -30,7 +30,7 @@ as the official ranking.
 | Compressed release asset | 236,994,168 bytes |
 | Exact parity tables | 81 of 81 |
 | Final regression validators | 7 of 7 passed |
-| Recruiter-readiness score | 100 of 100 |
+| Visitor-readiness score | 100 of 100 |
 | Default-page maximum memory | 0.290 GiB |
 | Heaviest tested view maximum memory | 1.684 GiB |
 | Failed hard checks | 0 |
@@ -217,7 +217,7 @@ Temporary download files remaining: 0
 The application no longer requires local Milestone 6 or Milestone 7 paths at
 runtime.
 
-## Phase 8D — Deployment package and recruiter experience
+## Phase 8D — Deployment package and user experience
 
 **Status: Complete**
 
@@ -245,9 +245,9 @@ The guarded release script requires:
 
 It does not overwrite an existing tag or release.
 
-### Recruiter-facing homepage
+### Public-facing homepage
 
-The first recruiter audit scored `50/100`. The final homepage added:
+The first visitor audit scored `50/100`. The final homepage added:
 
 - visible project scale;
 - a two-step suggested exploration path;
@@ -256,7 +256,7 @@ The first recruiter audit scored `50/100`. The final homepage added:
 - clear Enhanced Balanced Production prominence;
 - visible technical implementation context.
 
-The final recruiter-readiness score is `100/100`, with zero AppTest exceptions,
+The final visitor-readiness score is `100/100`, with zero AppTest exceptions,
 errors, or warnings.
 
 ## Phase 8E — Runtime optimization and release readiness
@@ -327,7 +327,7 @@ The final audit on July 21, 2026 passed all seven validators:
 4. Phase 8C compact runtime profile
 5. Phase 8E lazy point loading
 6. Phase 8D deployment package
-7. Phase 8D recruiter homepage
+7. Phase 8D visitor homepage
 
 Repository and security checks also passed:
 

@@ -12,14 +12,13 @@ def read(name: str) -> str:
     return (PORTFOLIO / name).read_text()
 
 
-def test_required_portfolio_documents_exist() -> None:
+def test_required_project_documents_exist() -> None:
     required = {
         "README.md",
         "CASE_STUDY.md",
         "ARCHITECTURE_AND_DATA_FLOW.md",
         "DEMO_AND_RECORDING_GUIDE.md",
-        "CAREER_MATERIALS.md",
-        "SCREENSHOT_GUIDE.md",
+        "PROJECT_SUMMARIES.md",
     }
     assert required == {
         path.name
@@ -53,45 +52,25 @@ def test_architecture_document_contains_visuals() -> None:
     assert "Analytical data flow" in text
 
 
-def test_demo_and_career_materials_are_complete() -> None:
+def test_demo_and_project_summaries_are_complete() -> None:
     demo = read("DEMO_AND_RECORDING_GUIDE.md")
-    career = read("CAREER_MATERIALS.md")
+    summaries = read("PROJECT_SUMMARIES.md")
 
     assert "30-second opening" in demo
     assert "Walkthrough sequence" in demo
     assert "Recording checklist" in demo
 
     required = (
-        "Résumé bullets",
-        "LinkedIn project description",
-        "Portfolio description",
-        "Graduate-school application language",
-        "30-second explanation",
-        "Two-minute explanation",
-        "STAR examples",
+        "Contribution highlights",
+        "Short project overview",
+        "Detailed project overview",
+        "Engineering examples",
     )
     for value in required:
-        assert value in career
+        assert value in summaries
 
 
-def test_screenshot_guide_uses_safe_expected_filenames() -> None:
-    text = read("SCREENSHOT_GUIDE.md")
-    required = (
-        "explorer_official_rankings.png",
-        "explorer_program_trends.png",
-        "Single Season",
-        "Overall — Combined",
-        "endpoint year 2026",
-        "Indoor season",
-        "does not contain an\nall-time Overall — Combined table",
-        "Crop out browser bookmarks",
-        "below 2 MiB",
-    )
-    for value in required:
-        assert value in text
-
-
-def test_portfolio_avoids_exaggerated_impact_claims() -> None:
+def test_project_documents_avoid_exaggerated_impact_claims() -> None:
     corpus = "\n".join(
         path.read_text()
         for path in PORTFOLIO.glob("*.md")
@@ -109,11 +88,11 @@ def test_portfolio_avoids_exaggerated_impact_claims() -> None:
         assert phrase not in corpus
 
 
-def test_readme_links_to_portfolio_package() -> None:
+def test_readme_links_to_project_documentation() -> None:
     text = README.read_text()
-    assert "<!-- PORTFOLIO_PACKAGE_START -->" in text
+    assert "## Project resources" in text
     assert "docs/portfolio/CASE_STUDY.md" in text
-    assert "docs/portfolio/CAREER_MATERIALS.md" in text
+    assert "docs/portfolio/PROJECT_SUMMARIES.md" in text
     assert (
         "https://ncaa-d1-track-analytics-pipeline-explorer."
         "streamlit.app/"
