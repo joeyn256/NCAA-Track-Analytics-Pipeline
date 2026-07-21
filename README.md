@@ -10,21 +10,41 @@ program trends, specialized analyses, and an interactive Streamlit explorer.
 
 ## Public Explorer
 
-**Deployment status:** Milestone 8 is complete. The compact public
-DuckDB is deployed through Streamlit Community Cloud and loads from the
+> [!IMPORTANT]
+> **[Launch the live NCAA Division I Athlete Development Explorer →](https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/)**
+>
+> Compare official program rankings, inspect athlete contributions, study
+> multi-season trends, and explore event-specific development results.
+
+**Deployment status:** Milestone 8 is complete. The compact public DuckDB is
+deployed through Streamlit Community Cloud and loads from the
 checksum-verified GitHub Release asset.
 
-**Live explorer:** [Open the NCAA Division I Athlete Development Explorer](https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/)
+### Project scale
 
-The recruiter-facing explorer highlights:
+| Performances | Athletes | Institutions | Deployment tables |
+|---:|---:|---:|---:|
+| **6,594,540** | **193,961** | **554** | **81** |
 
-- 6,594,540 standardized performance records;
-- 193,961 athletes;
-- 554 institutions;
-- official Enhanced Balanced Production rankings;
-- longitudinal program trends and comparisons;
-- specialized Event-Balanced analyses;
-- the clearly separated Average Development companion model.
+The production warehouse covers **554 institutions** and publishes **81 of 81
+validated deployment tables**.
+
+### Selected validated results
+
+| Result | Value |
+|---|---:|
+| Official ranking model | **Enhanced Balanced Production** |
+| Source-to-deployment parity | **81 of 81 tables** |
+| Public deployment rows | **2,918,594** |
+| Championship event budget | **100,000 positive points per event** |
+| Recruiter-readiness score | **100/100** |
+| Cloud-only startup | **Passed** |
+
+The explorer includes Official Rankings, Athlete Contributions, Individual
+Event, Program Trends, Program Comparison, Specialized Rankings, Average
+Development, School Profile, and Methodology views.
+
+[View the immutable `public-deployment-v1` release](https://github.com/joeyn256/NCAA-Track-Analytics-Pipeline/releases/tag/public-deployment-v1)
 
 ## Current Production Model
 
