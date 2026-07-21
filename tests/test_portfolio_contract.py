@@ -79,7 +79,11 @@ def test_screenshot_guide_uses_safe_expected_filenames() -> None:
     required = (
         "explorer_official_rankings.png",
         "explorer_program_trends.png",
-        "explorer_methodology.png",
+        "Single Season",
+        "Overall — Combined",
+        "endpoint year 2026",
+        "Indoor season",
+        "does not contain an\nall-time Overall — Combined table",
         "Crop out browser bookmarks",
         "below 2 MiB",
     )

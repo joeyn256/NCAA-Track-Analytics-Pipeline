@@ -227,7 +227,7 @@ The visual review was completed against the live public Streamlit explorer.
 
 ## Phase 9H — Portfolio and career package
 
-**Status: Written package complete; screenshot capture pending**
+**Status: Complete**
 
 Recruiter-facing materials now include:
 
@@ -313,7 +313,7 @@ application screenshots listed in `docs/portfolio/SCREENSHOT_GUIDE.md`.
 
 - [x] A concise case study is available.
 - [x] Architecture and data-flow visuals are available.
-- [ ] Selected application screenshots are current and safe to publish.
+- [x] Selected application screenshots are current and safe to publish.
 - [x] A short demo script and walkthrough-recording guide are available.
 - [x] Technical and nontechnical summaries are accurate.
 - [x] Engineering challenges, solutions, methodology, and limitations are

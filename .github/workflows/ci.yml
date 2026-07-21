@@ -57,6 +57,7 @@ jobs:
             scripts/prepare_public_release.py \
             tests/test_deployment_contract.py \
             tests/test_portfolio_contract.py \
+            tests/test_portfolio_screenshots.py \
             tests/test_prepare_public_release.py \
             tests/test_explorer_app.py \
             src/apps/deployment_data.py \

@@ -1,7 +1,7 @@
 # Screenshot Capture Guide
 
 The repository does not currently contain publishable application screenshots.
-Capture the following three images from the live public explorer.
+The portfolio includes two current images from the live public explorer.
 
 ## Required files
 
@@ -15,7 +15,6 @@ Use these exact filenames:
 
 1. `explorer_official_rankings.png`
 2. `explorer_program_trends.png`
-3. `explorer_methodology.png`
 
 ## Screenshot 1 — Official rankings
 
@@ -25,9 +24,16 @@ Show:
 - headline metrics;
 - Enhanced Balanced Production selected;
 - Broad — All Athletes;
-- All Time;
+- Single Season;
 - Overall — Combined;
+- endpoint year 2026;
+- Indoor season;
 - the first visible ranking rows.
+
+The frozen Enhanced Balanced Production publication does not contain an
+all-time Overall — Combined table. All Time supports Individual Event and
+Athlete Contributions views. Use the official 2026 Indoor combined ranking
+for this recruiter-facing screenshot.
 
 ## Screenshot 2 — Program trends
 
@@ -37,15 +43,6 @@ Show:
 - one program with a multi-season chart;
 - readable axis labels;
 - part of the seasonal history table.
-
-## Screenshot 3 — Methodology
-
-Show:
-
-- Methodology selected;
-- the official and companion model hierarchy;
-- observed-minus-expected explanation;
-- observational/non-causal limitation language.
 
 ## Safety checklist
 

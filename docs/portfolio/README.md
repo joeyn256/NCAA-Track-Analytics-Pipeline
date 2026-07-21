@@ -26,3 +26,21 @@ Pipeline.
 
 The rankings are observational. They measure development patterns in the
 recorded collegiate data and do not establish causal coaching effects.
+
+<!-- APP_SCREENSHOTS_START -->
+## Application screenshots
+
+### Official Enhanced Balanced Production ranking
+
+The official recruiter-facing view shows the Broad — All Athletes,
+Overall — Combined ranking for the 2026 Indoor season.
+
+![Official Enhanced Balanced Production ranking](screenshots/explorer_official_rankings.png)
+
+### Program trends
+
+The trends view shows an audited multi-season trajectory with national
+rank-strength percentiles and explicit missing-season handling.
+
+![Arkansas program trend](screenshots/explorer_program_trends.png)
+<!-- APP_SCREENSHOTS_END -->
