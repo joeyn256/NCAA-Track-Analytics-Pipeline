@@ -70,7 +70,7 @@ Major phases publish only after:
 
 ## Current Status
 
-**Milestones 1–5 are complete.**
+**Milestones 1–7 are complete.**
 
-The next phase is Milestone 6: exploratory visualization, interactive school
-profiles, and a public ranking explorer.
+- [Milestone 6 — Seasonal Development Rankings and Explorer](milestone_06_seasonal_rankings_and_exploratory_analytics.md)
+- [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestone_07_program_trends_and_specialized_rankings.md)

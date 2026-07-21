@@ -14,6 +14,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Final
 
+import math
+
+import altair as alt
+import duckdb
 import pandas as pd
 import streamlit as st
 
@@ -21,6 +25,453 @@ import streamlit as st
 APP_TITLE: Final = "NCAA Division I Athlete Development Explorer"
 
 ROOT = Path(__file__).resolve().parents[2]
+
+EVENT_BALANCED_SPECIALIZED_DB: Final = (
+    ROOT
+    / "data/processed/milestone7/"
+      "seasonal_program_trends_v1/"
+      "phase_7e2_event_balanced_specialized_rankings/"
+      "event_balanced_specialized_rankings_v2.duckdb"
+)
+
+EVENT_BALANCED_SPECIALIZED_ANALYSES: Final = {
+    "Development consistency": {
+        "table": "development_consistency_rankings",
+        "metric": "consistency_index",
+        "metric_label": "Consistency index",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "season_count",
+            "mean_rank_strength",
+            "rank_strength_sd",
+            "stability_percentile",
+            "total_net_points",
+            "athlete_event_unit_count",
+        ],
+    },
+    "Elite/frontier development": {
+        "table": "elite_frontier_development_rankings",
+        "metric": "elite_frontier_index",
+        "metric_label": "Elite/frontier index",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "frontier_season_count",
+            "elite_season_count",
+            "frontier_mean_rank_strength",
+            "elite_mean_rank_strength",
+            "total_net_points",
+            "athlete_event_unit_count",
+        ],
+    },
+    "Developing baseline tier": {
+        "table": "baseline_tier_rankings",
+        "metric": "net_points",
+        "metric_label": "Net Event-Balanced points",
+        "filter_column": "baseline_tier_key",
+        "filter_value": "developing",
+        "columns": [
+            "athlete_school_unit_count",
+            "athlete_event_unit_count",
+            "season_count",
+            "mean_baseline_level",
+            "mean_endpoint_level",
+            "net_points_per_event_unit",
+        ],
+    },
+    "Competitive baseline tier": {
+        "table": "baseline_tier_rankings",
+        "metric": "net_points",
+        "metric_label": "Net Event-Balanced points",
+        "filter_column": "baseline_tier_key",
+        "filter_value": "competitive",
+        "columns": [
+            "athlete_school_unit_count",
+            "athlete_event_unit_count",
+            "season_count",
+            "mean_baseline_level",
+            "mean_endpoint_level",
+            "net_points_per_event_unit",
+        ],
+    },
+    "Advanced baseline tier": {
+        "table": "baseline_tier_rankings",
+        "metric": "net_points",
+        "metric_label": "Net Event-Balanced points",
+        "filter_column": "baseline_tier_key",
+        "filter_value": "advanced",
+        "columns": [
+            "athlete_school_unit_count",
+            "athlete_event_unit_count",
+            "season_count",
+            "mean_baseline_level",
+            "mean_endpoint_level",
+            "net_points_per_event_unit",
+        ],
+    },
+    "Elite baseline tier": {
+        "table": "baseline_tier_rankings",
+        "metric": "net_points",
+        "metric_label": "Net Event-Balanced points",
+        "filter_column": "baseline_tier_key",
+        "filter_value": "elite",
+        "columns": [
+            "athlete_school_unit_count",
+            "athlete_event_unit_count",
+            "season_count",
+            "mean_baseline_level",
+            "mean_endpoint_level",
+            "net_points_per_event_unit",
+        ],
+    },
+    "Breakout rate": {
+        "table": "breakout_rate_rankings",
+        "metric": "stabilized_breakout_rate",
+        "metric_label": "Stabilized breakout rate",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "athlete_school_unit_count",
+            "breakout_count",
+            "raw_breakout_rate",
+            "net_points",
+            "athlete_event_unit_count",
+        ],
+    },
+    "Balanced program": {
+        "table": "balanced_program_rankings",
+        "metric": "balanced_program_index",
+        "metric_label": "Balanced program index",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "covered_cell_count",
+            "men_cell_count",
+            "women_cell_count",
+            "mean_cell_strength_percentile",
+            "cell_strength_sd",
+            "gender_strength_gap",
+            "total_group_points",
+        ],
+    },
+    "Development efficiency": {
+        "table": "development_efficiency_rankings",
+        "metric": "net_points_per_event_unit",
+        "metric_label": "Net points per athlete-event unit",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "athlete_event_unit_count",
+            "distinct_athlete_count",
+            "season_count",
+            "positive_points_per_event_unit",
+            "net_points",
+        ],
+    },
+    "Ranking robustness": {
+        "table": "ranking_robustness_rankings",
+        "metric": "robustness_index",
+        "metric_label": "Robustness index",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "compared_partition_count",
+            "mean_enhanced_rank_strength",
+            "mean_absolute_rank_shift",
+            "within_five_rank_share",
+            "rank_stability_percentile",
+        ],
+    },
+    "Inbound transfer development": {
+        "table": "inbound_transfer_development_rankings",
+        "metric": "net_points",
+        "metric_label": "Inbound net Event-Balanced points",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [],
+    },
+    "National elite finishers — Endpoint 90+": {
+        "table": "national_elite_endpoint90_rankings",
+        "metric": "national_elite_rank_strength_index",
+        "metric_label": "National elite rank-strength index",
+        "filter_column": None,
+        "filter_value": None,
+        "columns": [
+            "season_count",
+            "calendar_year_count",
+            "median_rank_strength",
+            "total_net_points",
+            "athlete_event_unit_count",
+        ],
+    },
+}
+
+EVENT_BALANCED_PERCENT_COLUMNS: Final = {
+    "consistency_index",
+    "mean_rank_strength",
+    "stability_percentile",
+    "elite_frontier_index",
+    "frontier_mean_rank_strength",
+    "elite_mean_rank_strength",
+    "stabilized_breakout_rate",
+    "raw_breakout_rate",
+    "balanced_program_index",
+    "mean_cell_strength_percentile",
+    "mean_enhanced_rank_strength",
+    "within_five_rank_share",
+    "rank_stability_percentile",
+    "robustness_index",
+    "national_elite_rank_strength_index",
+    "median_rank_strength",
+}
+
+SUPPLEMENTAL_DATA_DIR: Final = (
+    ROOT
+    / "data/processed/milestone5/"
+      "athlete_development_v1/"
+      "phase_5k_supplemental_development_rankings"
+)
+
+SUPPLEMENTAL_FILES: Final = {
+    "consistency": "development_consistency_rankings.csv",
+    "elite": "elite_development_rankings.csv",
+    "baseline": "baseline_tier_rankings.csv",
+    "breakout": "breakout_rate_rankings.csv",
+    "balanced": "balanced_program_rankings.csv",
+    "efficiency": "development_efficiency_rankings.csv",
+    "robustness": "ranking_robustness_rankings.csv",
+    "transfer": "transfer_development_rankings.csv",
+}
+
+SUPPLEMENTAL_ANALYSES: Final = {
+    "Development consistency": {
+        "file_key": "consistency",
+        "leader": "Air Force",
+        "rank_column": "official_consistency_rank",
+        "score_column": "consistency_index",
+        "sample_column": "athlete_school_unit_count",
+        "score_label": "Consistency index",
+        "score_format": "%.2f",
+        "filter_type": None,
+        "filter_key": None,
+        "minimum_sample": "30 athlete-school units",
+        "interpretation": (
+            "Rewards broad, repeatable development using equal weight on "
+            "the school median value-added percentile and the stabilized "
+            "above-expected athlete-share percentile."
+        ),
+        "extra_columns": [
+            ("median_athlete_value_added", "Median value added", "%.4f"),
+            (
+                "stabilized_above_expected_share",
+                "Above-expected share",
+                "%.2f%%",
+            ),
+        ],
+    },
+    "Elite/frontier development": {
+        "file_key": "elite",
+        "leader": "Air Force",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior value added",
+        "score_format": "%.4f",
+        "filter_type": "elite_development",
+        "filter_key": "baseline_70_plus",
+        "minimum_sample": "20 athlete-segment units",
+        "interpretation": (
+            "Measures development among athletes whose baseline normalized "
+            "performance level was at least 70."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+    "Developing baseline tier": {
+        "file_key": "baseline",
+        "leader": "Northern Iowa",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior value added",
+        "score_format": "%.4f",
+        "filter_type": "baseline_tier",
+        "filter_key": "developing",
+        "minimum_sample": "20 athlete-segment units",
+        "interpretation": (
+            "Ranks development for athletes beginning below normalized "
+            "performance level 50."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+    "Competitive baseline tier": {
+        "file_key": "baseline",
+        "leader": "LSU",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior value added",
+        "score_format": "%.4f",
+        "filter_type": "baseline_tier",
+        "filter_key": "competitive",
+        "minimum_sample": "20 athlete-segment units",
+        "interpretation": (
+            "Ranks development for athletes beginning from normalized "
+            "performance level 50 to below 65."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+    "Advanced baseline tier": {
+        "file_key": "baseline",
+        "leader": "Arkansas",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior value added",
+        "score_format": "%.4f",
+        "filter_type": "baseline_tier",
+        "filter_key": "advanced",
+        "minimum_sample": "20 athlete-segment units",
+        "interpretation": (
+            "Ranks development for athletes beginning from normalized "
+            "performance level 65 to below 80."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+    "Elite baseline tier": {
+        "file_key": "baseline",
+        "leader": "Air Force",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior value added",
+        "score_format": "%.4f",
+        "filter_type": "baseline_tier",
+        "filter_key": "elite",
+        "minimum_sample": "20 athlete-segment units",
+        "interpretation": (
+            "Ranks development for athletes beginning at normalized "
+            "performance level 80 or higher."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+    "Breakout rate": {
+        "file_key": "breakout",
+        "leader": "Mercer",
+        "rank_column": "official_breakout_rank",
+        "score_column": "posterior_breakout_rate",
+        "sample_column": "athlete_school_unit_count",
+        "score_label": "Stabilized breakout rate",
+        "score_format": "%.2f%%",
+        "filter_type": None,
+        "filter_key": None,
+        "minimum_sample": "30 athlete-school units",
+        "interpretation": (
+            "Measures the stabilized probability that an athlete-school "
+            "unit produced value added of at least five normalized points."
+        ),
+        "extra_columns": [],
+    },
+    "Balanced program": {
+        "file_key": "balanced",
+        "leader": "LSU",
+        "rank_column": "official_balanced_program_rank",
+        "score_column": "balanced_program_index",
+        "sample_column": "summed_group_athlete_units",
+        "score_label": "Balanced program index",
+        "score_format": "%.4f",
+        "filter_type": None,
+        "filter_key": None,
+        "minimum_sample": (
+            "At least 8 of 12 gender-group cells, including at least "
+            "3 men's and 3 women's cells"
+        ),
+        "interpretation": (
+            "Rewards strength across men's and women's Sprints, Middle "
+            "Distance, Distance, Hurdles, Jumps, and Throws while penalizing "
+            "group dispersion, gender imbalance, and missing coverage."
+        ),
+        "extra_columns": [],
+    },
+    "Development efficiency": {
+        "file_key": "efficiency",
+        "leader": "UC San Diego",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior annualized value added",
+        "score_format": "%.4f",
+        "filter_type": "development_efficiency",
+        "filter_key": "annualized_value_added",
+        "minimum_sample": "30 athlete-school units",
+        "interpretation": (
+            "Measures how quickly athletes developed by ranking posterior "
+            "mean annualized athlete-school value added."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+    "Ranking robustness": {
+        "file_key": "robustness",
+        "leader": "Air Force",
+        "rank_column": "robustness_rank",
+        "score_column": "worst_case_rank_percentile",
+        "sample_column": "athlete_school_unit_count",
+        "score_label": "Worst-case rank percentile",
+        "score_format": "%.2f",
+        "filter_type": None,
+        "filter_key": None,
+        "minimum_sample": "All 7 approved sensitivity variants",
+        "interpretation": (
+            "Rewards schools whose conclusions remain strong under every "
+            "approved sensitivity specification, ordered by worst rank and "
+            "then average rank."
+        ),
+        "extra_columns": [
+            ("worst_case_rank", "Worst rank", "%d"),
+            ("average_rank", "Average rank", "%.2f"),
+            ("rank_range", "Rank range", "%d"),
+        ],
+    },
+    "Inbound transfer development": {
+        "file_key": "transfer",
+        "leader": "Florida",
+        "rank_column": "official_rank",
+        "score_column": "posterior_school_score",
+        "sample_column": "athlete_unit_count",
+        "score_label": "Posterior destination value added",
+        "score_format": "%.4f",
+        "filter_type": "transfer_development",
+        "filter_key": "inbound_transfer",
+        "minimum_sample": "15 destination athlete-school units",
+        "interpretation": (
+            "Measures development after athletes arrive at a school beyond "
+            "their first observed institution. This is provisional because "
+            "transfer status is inferred from observed school chronology."
+        ),
+        "extra_columns": [
+            ("posterior_ci95_lower", "CI lower", "%.4f"),
+            ("posterior_ci95_upper", "CI upper", "%.4f"),
+        ],
+    },
+}
 
 BROAD_DATA_DIR = (
     ROOT
@@ -46,6 +497,58 @@ POINTS_DATA_DIR = (
       "final_development_rankings_v1/"
       "phase_6g_final_publication"
 )
+
+MILESTONE7_EXPLORER_VERSION: Final = "milestone7_explorer_v6"
+MILESTONE7_EXCLUDED_COHORT_KEYS: Final = frozenset(
+    {"championship_endpoint_95_plus"}
+)
+MILESTONE7_TREND_SEASON_COUNTS: Final = {
+    "indoor": {
+        "frontier_70_plus": 15,
+        "elite_80_plus": 12,
+        "national_elite_endpoint_90_plus": 16,
+        "broad_all_athletes": 1,
+    },
+    "outdoor": {
+        "broad_all_athletes": 5,
+        "frontier_70_plus": 15,
+        "elite_80_plus": 7,
+        "national_elite_endpoint_90_plus": 14,
+    },
+}
+MILESTONE7_NAVIGATION: Final = {
+    "Rankings": "Event-Balanced Points",
+    "Trends": "Program Trends",
+    "Compare": "Program Comparison",
+    "Average Development": "Average Development",
+    "Diagnostics": "Model Diagnostics",
+    "Coverage": "Season Coverage",
+    "Methodology": "Methodology",
+}
+MILESTONE7_DATA_DIR = (
+    ROOT
+    / "data/processed/milestone7/"
+      "seasonal_program_trends_v1/"
+      "phase_7d_final_publication"
+)
+MILESTONE7_DB = MILESTONE7_DATA_DIR / "seasonal_program_trends_v1.duckdb"
+
+MILESTONE7_TABLES = {
+    "program_index": "explorer_program_index",
+    "latest_summary": "explorer_latest_program_summary",
+    "program_summary": "explorer_program_summary",
+    "metric_long": "explorer_program_metric_long",
+    "overall_season": "explorer_overall_season_series",
+    "overall_yoy": "explorer_overall_yoy_series",
+    "indoor_outdoor": "explorer_indoor_outdoor_series",
+    "overall_window": "explorer_overall_window_series",
+    "group_season": "explorer_group_season_series",
+    "group_yoy": "explorer_group_yoy_series",
+    "group_window": "explorer_group_window_series",
+    "event_season": "explorer_event_season_series",
+    "event_yoy": "explorer_event_yoy_series",
+    "event_window": "explorer_event_window_series",
+}
 
 POINTS_FILES = {
     "model_registry": "model_registry.csv",
@@ -281,7 +784,12 @@ def select_cohort(
 ) -> tuple[str, dict[str, object]]:
     cohort_label = st.selectbox(
         "Development cohort",
-        list(COHORTS),
+        [
+            label
+            for label, config in COHORTS.items()
+            if config["cohort_key"]
+            not in MILESTONE7_EXCLUDED_COHORT_KEYS
+        ],
         key=key,
         help=(
             "Broad is the primary all-athlete ranking. Baseline cohorts "
@@ -934,7 +1442,7 @@ def existing_columns(
     return [column for column in requested if column in frame.columns]
 
 
-def event_balanced_points_page() -> None:
+def official_rankings_page() -> None:
     st.subheader("Event-Balanced Development Points")
     st.caption(
         "Every publishable NCAA championship event distributes exactly "
@@ -1001,7 +1509,11 @@ def event_balanced_points_page() -> None:
 
     cohort_label = st.selectbox(
         "Development cohort",
-        list(POINT_COHORT_KEYS),
+        [
+            label
+            for label, cohort_value in POINT_COHORT_KEYS.items()
+            if cohort_value not in MILESTONE7_EXCLUDED_COHORT_KEYS
+        ],
         key=f"points_cohort_{model_key}",
     )
     cohort_key = POINT_COHORT_KEYS[cohort_label]
@@ -1465,18 +1977,39 @@ def event_balanced_points_page() -> None:
             }
         )
 
+    display_for_ui = display.copy()
+    percentage_columns = [
+        "Positive share of available points",
+        "Net share of available points",
+        "Positive event share",
+        "Net event share",
+        "Positive group share",
+        "Net group share",
+        "Positive share of available group points",
+        "Net share of available group points",
+    ]
+    for percentage_column in percentage_columns:
+        if percentage_column in display_for_ui.columns:
+            display_for_ui[percentage_column] = (
+                pd.to_numeric(
+                    display_for_ui[percentage_column],
+                    errors="coerce",
+                )
+                * 100.0
+            )
+
     metric_columns = st.columns(4)
     metric_columns[0].metric("Rows shown", f"{len(display):,}")
 
     if "Positive points" in display.columns:
         metric_columns[1].metric(
             "Positive points shown",
-            f"{display['Positive points'].sum():,.2f}",
+            compact_number(display["Positive points"].sum()),
         )
     elif "Positive group points" in display.columns:
         metric_columns[1].metric(
             "Positive group points shown",
-            f"{display['Positive group points'].sum():,.2f}",
+            compact_number(display["Positive group points"].sum()),
         )
     else:
         metric_columns[1].metric("Positive points shown", "—")
@@ -1484,12 +2017,12 @@ def event_balanced_points_page() -> None:
     if "Negative points" in display.columns:
         metric_columns[2].metric(
             "Negative points shown",
-            f"{display['Negative points'].sum():,.2f}",
+            compact_number(display["Negative points"].sum()),
         )
     elif "Negative group points" in display.columns:
         metric_columns[2].metric(
             "Negative group points shown",
-            f"{display['Negative group points'].sum():,.2f}",
+            compact_number(display["Negative group points"].sum()),
         )
     else:
         metric_columns[2].metric("Negative points shown", "—")
@@ -1504,7 +2037,7 @@ def event_balanced_points_page() -> None:
     )
 
     st.dataframe(
-        display,
+        display_for_ui,
         width="stretch",
         hide_index=True,
         column_config={
@@ -1917,6 +2450,625 @@ def all_time_average_page() -> None:
     )
 
 
+
+def supplemental_frame(file_key: str) -> pd.DataFrame:
+    path = SUPPLEMENTAL_DATA_DIR / SUPPLEMENTAL_FILES[file_key]
+    if not path.exists():
+        return pd.DataFrame()
+    return load_csv_file(path)
+
+
+def supplemental_official_mask(frame: pd.DataFrame) -> pd.Series:
+    if "official_rank_eligible" not in frame.columns:
+        return pd.Series(True, index=frame.index, dtype=bool)
+
+    values = frame["official_rank_eligible"]
+    if values.dtype == bool:
+        return values.fillna(False)
+
+    return (
+        values.astype(str)
+        .str.strip()
+        .str.lower()
+        .map({"true": True, "false": False, "1": True, "0": False})
+        .fillna(False)
+    )
+
+
+def prepare_supplemental_analysis(
+    analysis_name: str,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    config = SUPPLEMENTAL_ANALYSES[analysis_name]
+    frame = supplemental_frame(str(config["file_key"])).copy()
+
+    if frame.empty:
+        return frame, config
+
+    filter_type = config.get("filter_type")
+    filter_key = config.get("filter_key")
+
+    if filter_type is not None and "ranking_type" in frame.columns:
+        frame = frame[
+            frame["ranking_type"].astype(str) == str(filter_type)
+        ].copy()
+
+    if filter_key is not None and "ranking_key" in frame.columns:
+        frame = frame[
+            frame["ranking_key"].astype(str) == str(filter_key)
+        ].copy()
+
+    rank_column = str(config["rank_column"])
+    score_column = str(config["score_column"])
+    sample_column = str(config["sample_column"])
+
+    for column in (rank_column, score_column, sample_column):
+        if column in frame.columns:
+            frame[column] = pd.to_numeric(
+                frame[column],
+                errors="coerce",
+            )
+
+    frame["_supplemental_official"] = supplemental_official_mask(frame)
+
+    if rank_column in frame.columns:
+        frame = frame.sort_values(
+            [
+                "_supplemental_official",
+                rank_column,
+                "school_name",
+            ],
+            ascending=[False, True, True],
+            na_position="last",
+        )
+
+    return frame, config
+
+
+def supplemental_overview_table() -> pd.DataFrame:
+    rows = []
+    for analysis_name, config in SUPPLEMENTAL_ANALYSES.items():
+        rows.append(
+            {
+                "Analysis": analysis_name,
+                "Current leader": config["leader"],
+                "Minimum support": config["minimum_sample"],
+                "What it measures": config["interpretation"],
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def additional_rankings_page() -> None:
+    st.subheader("Supplemental Rankings")
+    st.info(
+        "These are frozen Milestone 5 Average Development supplemental "
+        "analyses. They use posterior value-added and related companion "
+        "metrics, not Enhanced Balanced Production points."
+    )
+
+    missing = [
+        SUPPLEMENTAL_DATA_DIR / filename
+        for filename in SUPPLEMENTAL_FILES.values()
+        if not (SUPPLEMENTAL_DATA_DIR / filename).exists()
+    ]
+    if missing:
+        st.error(
+            "The supplemental Phase 5K publication files are missing."
+        )
+        st.code("\n".join(str(path) for path in missing))
+        return
+
+    st.markdown("#### Current leaders")
+    st.dataframe(
+        supplemental_overview_table(),
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "What it measures": st.column_config.TextColumn(width="large"),
+            "Minimum support": st.column_config.TextColumn(width="medium"),
+        },
+    )
+
+    st.divider()
+
+    analysis_name = st.selectbox(
+        "Additional ranking",
+        list(SUPPLEMENTAL_ANALYSES),
+        key="supplemental_ranking_analysis_v4",
+    )
+
+    frame, config = prepare_supplemental_analysis(analysis_name)
+    if frame.empty:
+        st.warning("No rows are available for the selected analysis.")
+        return
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Current leader", str(config["leader"]))
+    c2.metric(
+        "Officially ranked schools",
+        f"{int(frame['_supplemental_official'].sum()):,}",
+    )
+    c3.metric("Minimum support", str(config["minimum_sample"]))
+
+    with st.expander("Methodology and interpretation", expanded=True):
+        st.markdown(
+            f"""\
+**Analysis:** {analysis_name}
+
+**Primary metric:** {config["score_label"]}
+
+**Eligibility/support:** {config["minimum_sample"]}
+
+{config["interpretation"]}
+            """
+        )
+        if analysis_name == "Inbound transfer development":
+            st.warning(
+                "Transfer status is inferred from the first observed school "
+                "chronology rather than an external transfer registry."
+            )
+
+    filter_col1, filter_col2 = st.columns(2)
+    with filter_col1:
+        official_only = st.checkbox(
+            "Show officially ranked schools only",
+            value=True,
+            key=f"supplemental_official_only_{analysis_name}",
+        )
+    with filter_col2:
+        school_search = st.text_input(
+            "Search school",
+            value="",
+            key=f"supplemental_school_search_{analysis_name}",
+        ).strip()
+
+    filtered = frame.copy()
+    if official_only:
+        filtered = filtered[filtered["_supplemental_official"]].copy()
+
+    if school_search:
+        filtered = filtered[
+            filtered["school_name"]
+            .astype(str)
+            .str.contains(school_search, case=False, na=False)
+        ].copy()
+
+    rank_column = str(config["rank_column"])
+    score_column = str(config["score_column"])
+    sample_column = str(config["sample_column"])
+    score_label = str(config["score_label"])
+
+    display = pd.DataFrame(index=filtered.index)
+    display["Rank"] = filtered.get(rank_column)
+    display["School"] = filtered.get("school_name")
+    display[score_label] = filtered.get(score_column)
+    display["Sample"] = filtered.get(sample_column)
+
+    for source_column, label, _format in config.get("extra_columns", []):
+        if source_column in filtered.columns:
+            values = pd.to_numeric(
+                filtered[source_column],
+                errors="coerce",
+            )
+            if "share" in source_column and (
+                values.dropna().empty or values.dropna().max() <= 1.0
+            ):
+                values = values * 100.0
+            display[label] = values
+
+    if analysis_name == "Breakout rate" and score_label in display.columns:
+        values = pd.to_numeric(display[score_label], errors="coerce")
+        if values.dropna().empty or values.dropna().max() <= 1.0:
+            display[score_label] = values * 100.0
+
+    if "conference_name" in filtered.columns:
+        display["Conference"] = filtered["conference_name"]
+    if "state_code" in filtered.columns:
+        display["State"] = filtered["state_code"]
+
+    column_config: dict[str, object] = {
+        "Rank": st.column_config.NumberColumn(format="%d"),
+        score_label: st.column_config.NumberColumn(
+            format=str(config["score_format"])
+        ),
+        "Sample": st.column_config.NumberColumn(format="%d"),
+    }
+
+    for _source_column, label, value_format in config.get(
+        "extra_columns",
+        [],
+    ):
+        if label in display.columns:
+            column_config[label] = st.column_config.NumberColumn(
+                format=value_format
+            )
+
+    st.dataframe(
+        display,
+        width="stretch",
+        hide_index=True,
+        column_config=column_config,
+    )
+
+    st.download_button(
+        "Download selected additional ranking",
+        data=display.to_csv(index=False).encode("utf-8"),
+        file_name=(
+            analysis_name.lower()
+            .replace("/", "_")
+            .replace(" ", "_")
+            + "_rankings.csv"
+        ),
+        mime="text/csv",
+        key=f"download_supplemental_{analysis_name}",
+    )
+
+
+
+def rankings_hub_page() -> None:
+    ranking_section = st.radio(
+        "Rankings section",
+        ["Official Rankings", "Specialized Rankings"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="rankings_section_v6",
+    )
+    st.divider()
+
+    if ranking_section == "Official Rankings":
+        official_rankings_page()
+    else:
+        event_balanced_specialized_rankings_page()
+
+
+@st.cache_data(show_spinner=False)
+def load_event_balanced_specialized_table(
+    table_name: str,
+) -> pd.DataFrame:
+    if not EVENT_BALANCED_SPECIALIZED_DB.exists():
+        return pd.DataFrame()
+
+    connection = duckdb.connect(
+        str(EVENT_BALANCED_SPECIALIZED_DB),
+        read_only=True,
+    )
+    try:
+        return connection.execute(
+            f'SELECT * FROM "{table_name}"'
+        ).df()
+    finally:
+        connection.close()
+
+
+def event_balanced_specialized_overview() -> pd.DataFrame:
+    registry = load_event_balanced_specialized_table(
+        "specialized_analysis_registry"
+    )
+    leaders = load_event_balanced_specialized_table(
+        "specialized_ranking_leaders"
+    )
+
+    if registry.empty:
+        return pd.DataFrame()
+
+    overview = registry[
+        [
+            "analysis_order",
+            "analysis_key",
+            "analysis_label",
+            "official_metric_label",
+            "methodology_summary",
+        ]
+    ].copy()
+
+    if not leaders.empty:
+        overview = overview.merge(
+            leaders[
+                [
+                    "analysis_key",
+                    "leader_school",
+                    "leader_metric_value",
+                ]
+            ],
+            on="analysis_key",
+            how="left",
+        )
+    else:
+        overview["leader_school"] = pd.NA
+        overview["leader_metric_value"] = pd.NA
+
+    transfer = load_event_balanced_specialized_table(
+        "transfer_inference_registry"
+    )
+    if not transfer.empty:
+        transfer_status = str(transfer.iloc[0]["publication_status"])
+        mask = (
+            overview["analysis_key"].astype(str)
+            == "inbound_transfer_development"
+        )
+        overview.loc[
+            mask & overview["leader_school"].isna(),
+            "leader_school",
+        ] = "Unavailable"
+        overview.loc[
+            mask,
+            "methodology_summary",
+        ] = (
+            overview.loc[mask, "methodology_summary"].astype(str)
+            + f" Publication status: {transfer_status}."
+        )
+
+    return overview.sort_values("analysis_order").rename(
+        columns={
+            "analysis_label": "Analysis",
+            "leader_school": "Current leader",
+            "official_metric_label": "Metric",
+            "methodology_summary": "What it measures",
+        }
+    )
+
+
+def prepare_event_balanced_specialized_analysis(
+    analysis_name: str,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    config = EVENT_BALANCED_SPECIALIZED_ANALYSES[analysis_name]
+    frame = load_event_balanced_specialized_table(
+        str(config["table"])
+    ).copy()
+
+    filter_column = config.get("filter_column")
+    filter_value = config.get("filter_value")
+    if (
+        not frame.empty
+        and filter_column is not None
+        and filter_column in frame.columns
+    ):
+        frame = frame[
+            frame[filter_column].astype(str) == str(filter_value)
+        ].copy()
+
+    if "official_rank" in frame.columns:
+        frame["official_rank"] = pd.to_numeric(
+            frame["official_rank"],
+            errors="coerce",
+        )
+        frame = frame.sort_values(
+            ["official_rank", "school_name"],
+            na_position="last",
+        )
+
+    return frame, config
+
+
+def specialized_metric_display(
+    value: object,
+    column_name: str,
+) -> str:
+    numeric = pd.to_numeric(
+        pd.Series([value]),
+        errors="coerce",
+    ).iloc[0]
+    if pd.isna(numeric):
+        return "—"
+    if column_name in EVENT_BALANCED_PERCENT_COLUMNS:
+        return f"{float(numeric):.1%}"
+    return f"{float(numeric):,.2f}"
+
+
+def specialized_column_label(column_name: str) -> str:
+    labels = {
+        "season_count": "Seasons",
+        "calendar_year_count": "Calendar years",
+        "mean_rank_strength": "Mean rank strength",
+        "rank_strength_sd": "Rank-strength SD",
+        "stability_percentile": "Stability percentile",
+        "total_net_points": "Net points",
+        "athlete_event_unit_count": "Athlete-event units",
+        "frontier_season_count": "Frontier seasons",
+        "elite_season_count": "Elite seasons",
+        "frontier_mean_rank_strength": "Frontier strength",
+        "elite_mean_rank_strength": "Elite strength",
+        "athlete_school_unit_count": "Athlete-school units",
+        "mean_baseline_level": "Mean baseline",
+        "mean_endpoint_level": "Mean endpoint",
+        "net_points_per_event_unit": "Net points per unit",
+        "breakout_count": "Breakouts",
+        "raw_breakout_rate": "Raw breakout rate",
+        "net_points": "Net points",
+        "covered_cell_count": "Covered cells",
+        "men_cell_count": "Men's cells",
+        "women_cell_count": "Women's cells",
+        "mean_cell_strength_percentile": "Mean cell strength",
+        "cell_strength_sd": "Cell-strength SD",
+        "gender_strength_gap": "Gender-strength gap",
+        "total_group_points": "Group points",
+        "distinct_athlete_count": "Athletes",
+        "positive_points_per_event_unit": "Positive points per unit",
+        "compared_partition_count": "Compared partitions",
+        "mean_enhanced_rank_strength": "Enhanced rank strength",
+        "mean_absolute_rank_shift": "Mean absolute rank shift",
+        "within_five_rank_share": "Within five ranks",
+        "rank_stability_percentile": "Rank stability",
+        "median_rank_strength": "Median rank strength",
+    }
+    return labels.get(
+        column_name,
+        column_name.replace("_", " ").title(),
+    )
+
+
+def event_balanced_specialized_rankings_page() -> None:
+    st.subheader("Event-Balanced Specialized Rankings")
+    st.info(
+        "These leaderboards are recalculated from Enhanced Balanced "
+        "Production. The posterior supplemental rankings remain under "
+        "Average Development."
+    )
+
+    if not EVENT_BALANCED_SPECIALIZED_DB.exists():
+        st.error("The Phase 7E.2 specialized-ranking database is missing.")
+        st.code(str(EVENT_BALANCED_SPECIALIZED_DB))
+        return
+
+    overview = event_balanced_specialized_overview()
+    if not overview.empty:
+        st.markdown("#### Current leaders")
+        st.dataframe(
+            overview[
+                [
+                    "Analysis",
+                    "Current leader",
+                    "Metric",
+                    "What it measures",
+                ]
+            ],
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "What it measures": st.column_config.TextColumn(
+                    width="large"
+                ),
+            },
+        )
+
+    st.divider()
+
+    analysis_name = st.selectbox(
+        "Specialized ranking",
+        list(EVENT_BALANCED_SPECIALIZED_ANALYSES),
+        key="event_balanced_specialized_analysis_v6",
+    )
+    frame, config = prepare_event_balanced_specialized_analysis(
+        analysis_name
+    )
+
+    if analysis_name == "Inbound transfer development" and frame.empty:
+        transfer = load_event_balanced_specialized_table(
+            "transfer_inference_registry"
+        )
+        status = "unavailable"
+        if not transfer.empty:
+            status = str(transfer.iloc[0]["publication_status"])
+        st.warning(
+            "Inbound transfer development is not publishable under the "
+            "current frozen Broad coverage. No leaderboard is fabricated."
+        )
+        st.caption(f"Publication status: {status}")
+        return
+
+    if frame.empty:
+        st.warning("No ranking rows are available for this analysis.")
+        return
+
+    metric_column = str(config["metric"])
+    metric_label = str(config["metric_label"])
+    leader = frame.iloc[0]
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Current leader", str(leader.get("school_name", "—")))
+    c2.metric(
+        metric_label,
+        specialized_metric_display(
+            leader.get(metric_column),
+            metric_column,
+        ),
+    )
+    c3.metric("Ranked schools", f"{len(frame):,}")
+
+    registry = load_event_balanced_specialized_table(
+        "specialized_analysis_registry"
+    )
+    method = ""
+    if not registry.empty:
+        matching = registry[
+            registry["analysis_label"].astype(str) == analysis_name
+        ]
+        if not matching.empty:
+            method = str(matching.iloc[0]["methodology_summary"])
+
+    with st.expander("Methodology and interpretation", expanded=True):
+        st.write(method)
+        st.caption(
+            "Official model: Enhanced Balanced Production. "
+            "The Phase 7E.2 publication passed all 22 hard checks."
+        )
+
+    school_search = st.text_input(
+        "Search school",
+        value="",
+        key=f"event_balanced_specialized_search_{analysis_name}",
+    ).strip()
+    filtered = frame.copy()
+    if school_search:
+        filtered = filtered[
+            filtered["school_name"]
+            .astype(str)
+            .str.contains(school_search, case=False, na=False)
+        ].copy()
+
+    display = pd.DataFrame(index=filtered.index)
+    display["Rank"] = filtered.get("official_rank")
+    display["School"] = filtered.get("school_name")
+    display[metric_label] = filtered.get(metric_column)
+
+    selected_columns = [
+        column
+        for column in config.get("columns", [])
+        if column in filtered.columns
+    ]
+    for column in selected_columns:
+        display[specialized_column_label(column)] = filtered[column]
+
+    column_config: dict[str, object] = {
+        "Rank": st.column_config.NumberColumn(format="%d"),
+    }
+
+    for source_column in [metric_column, *selected_columns]:
+        label = (
+            metric_label
+            if source_column == metric_column
+            else specialized_column_label(source_column)
+        )
+        if source_column in EVENT_BALANCED_PERCENT_COLUMNS:
+            column_config[label] = st.column_config.NumberColumn(
+                format="percent"
+            )
+        elif (
+            "count" in source_column
+            or source_column.endswith("_units")
+            or source_column.endswith("_seasons")
+        ):
+            column_config[label] = st.column_config.NumberColumn(
+                format="%d"
+            )
+        else:
+            column_config[label] = st.column_config.NumberColumn(
+                format="%.2f"
+            )
+
+    st.dataframe(
+        display,
+        width="stretch",
+        hide_index=True,
+        column_config=column_config,
+    )
+
+    st.download_button(
+        "Download selected specialized ranking",
+        data=display.to_csv(index=False).encode("utf-8"),
+        file_name=(
+            analysis_name.lower()
+            .replace("—", "")
+            .replace("+", "plus")
+            .replace("/", "_")
+            .replace(" ", "_")
+            + "_event_balanced_rankings.csv"
+        ),
+        mime="text/csv",
+        key=f"download_event_balanced_specialized_{analysis_name}",
+    )
+
+
 def rankings_page() -> None:
     st.subheader("Average Athlete Development")
     st.caption(
@@ -1978,6 +3130,12 @@ def rankings_page() -> None:
 
 def school_profile_page() -> None:
     st.subheader("School Profile")
+    st.caption(
+        "Secondary Average Athlete Development profile. This page uses the "
+        "empirical-Bayes posterior school score from Milestones 5–6, not "
+        "Enhanced Balanced Production points. Use Program Trends for the "
+        "official Milestone 7 program trajectory."
+    )
 
     cohort_label, config = select_cohort(
         key="school_profile_cohort",
@@ -2054,19 +3212,48 @@ def school_profile_page() -> None:
         ),
     )
 
-    st.markdown("#### Development trend")
+    st.markdown("#### Average-development seasonal trend")
     trend = school_overall[
         [
+            "season_year",
+            "season_type",
             "Season",
             "season_centered_posterior_score",
         ]
-    ].dropna()
-    if not trend.empty:
-        st.line_chart(
-            trend.set_index("Season"),
-            y="season_centered_posterior_score",
-            y_label="Season-relative development score",
+    ].dropna(subset=["season_centered_posterior_score"])
+    if trend.empty:
+        st.info("No Average Development seasonal scores are available.")
+    else:
+        profile_chart = (
+            alt.Chart(trend)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X(
+                    "season_year:O",
+                    title="Endpoint year",
+                    axis=alt.Axis(labelAngle=0),
+                ),
+                y=alt.Y(
+                    "season_centered_posterior_score:Q",
+                    title="Season-relative Average Development score",
+                    scale=alt.Scale(zero=False),
+                ),
+                color=alt.Color(
+                    "season_type:N",
+                    title="Season type",
+                ),
+                tooltip=[
+                    alt.Tooltip("Season:N", title="Season"),
+                    alt.Tooltip(
+                        "season_centered_posterior_score:Q",
+                        title="Season-relative score",
+                        format=".4f",
+                    ),
+                ],
+            )
+            .properties(height=340)
         )
+        st.altair_chart(profile_chart, width="stretch")
 
     st.markdown("#### Overall seasonal history")
     history_columns = [
@@ -2608,151 +3795,923 @@ def model_diagnostics_page() -> None:
 
 
 def methodology_page() -> None:
-    st.subheader("How to Read the Rankings")
+    st.subheader("Methodology and Interpretation")
 
     st.markdown(
         """
-### Official primary ranking: Enhanced Balanced Production
+### What the official ranking measures
 
-Milestone 6 freezes this as the official primary model after sensitivity,
-rank-stability, concentration, roster-size, negative-pool, and matched
-elite-development validation.
+The official primary model is **Enhanced Balanced Production**. It measures
+how much reliable athlete development a school produced across NCAA
+championship events. It remains a development product—not a forecast of NCAA
+championship points or current roster strength.
 
-Every publishable NCAA championship event distributes exactly **100,000
-positive points** to individual athlete-school-event contributions.
+### Frozen Enhanced Balanced Production model
 
-The enhanced primary model applies a moderate empirical support adjustment:
+- Each publishable championship event has a **100,000-point positive budget**.
+- Negative development is scored separately and capped at **100,000 points per
+  event partition**.
+- Athlete contributions receive a support-reliability adjustment with frozen
+  **support k = 191**.
+- There is **no additional elite multiplier**. Starting level and proximity to
+  the event ceiling are already reflected in the nonlinear development scale.
+- The primary taxonomy contains **27 championship events** and **seven event
+  groups**. Steeplechase belongs to Distance; the 500m, 600m, and 1000m are
+  excluded from the primary production ranking.
 
-```text
-reliability = sqrt(n / (n + empirical median support))
-```
+### Explorer cohorts
 
-It also bounds the magnitude of each event's negative pool at 100,000 points.
-Until the negative signal reaches the positive signal, the penalty is exactly
-the same as the original linear formula. The cap only prevents one event's
-regression tail from exceeding another event's entire positive opportunity.
+The public explorer shows four useful levels:
 
-### Preserved alternatives
+1. **Broad — All Athletes** for the widest program-production view.
+2. **Frontier — Baseline 70+** for athletes who began at a strong level.
+3. **Elite — Baseline 80+** for high-level starting athletes.
+4. **National Elite Finishers — Endpoint 90+** for development into nationally
+   elite performance.
 
-**Original Balanced Production v4.1** is available from the Scoring model
-selector and reproduces the validated Phase 6D v4.1 points exactly.
+The Endpoint 95+ cohort remains preserved in the publication for auditability,
+but it is hidden from the explorer because it contains too few seasons and
+school rows to provide a stable program-comparison view.
 
-**Average Athlete Development** remains a separate page with two time
-views. **All Time** restores the frozen Milestone 5 school-average ranking;
-**Single Season** contains the Phase 6A/6B endpoint-season rankings. These
-answer how well the typical athlete developed, while the balanced-production
-models answer how much total development the program produced.
+### Milestone 7 seasonal trends
 
-Every publishable NCAA championship event distributes exactly **100,000
-positive points** to individual athlete-school-event contributions.
+- Year-over-year movement compares the **same season type** with the exact
+  previous calendar year.
+- Score movement is `current score − previous score`.
+- Rank improvement is `previous rank − current rank`; positive values move
+  toward rank 1.
+- Indoor-versus-outdoor comparison is a separate same-calendar-year product.
+- Missing seasons remain gaps. There is no interpolation, zero filling,
+  nearest-year matching, or carry-forward.
+- The missing **2020 Outdoor** production season remains absent.
+- Trend windows cover the latest **three or five calendar years**.
+- Slope-based momentum and trajectory labels require at least **three eligible
+  observations**.
 
-```text
-athlete development signal
-= observed improvement
-− cross-fitted expected improvement
+### Program Trends metrics
 
-positive conversion
-= 100,000
-÷ sum of positive athlete development signals
+- **Performance percentile:** national percentile of the program's average
+  rank-strength percentile in the selected window.
+- **Momentum percentile:** national percentile of its rank-strength slope per
+  year.
+- **Consistency percentile:** inverse national percentile of seasonal
+  variation; higher values indicate more stable results.
+- **Trajectory:** compares the direction of the Enhanced score slope with the
+  direction of the rank-strength slope.
 
-athlete points
-= athlete development signal × positive conversion
-```
+Every percentile is calculated only within the exact selected cohort, ranking
+scope, gender, endpoint year, season type, and trend window.
 
-Positive athlete points sum to exactly 100,000 in every event. Athletes with
-negative regression receive negative points using the same conversion.
-Those negative points are reported separately and do not consume the
-100,000 positive pool.
+### Average Development and School Profile
 
-One athlete is counted once per school and event in a ranking partition.
-Multiple underlying trajectories are averaged before points are allocated.
-School event points are direct sums of athlete contributions. There is no
-top-eight cutoff and no school-rank point simulation.
-
-Overall rankings sum equal event pools. Coaching-group rankings average the
-equal event pools in each group and therefore distribute exactly 100,000
-positive points per group.
-
-Steeplechase belongs to **Distance**. It is not a standalone group. The
-500m, 600m, and 1000m remain available in legacy analysis but do not affect
-the primary championship-event ranking.
-
-The explorer derives cohort, time, season, gender, event, and group choices
-from the rows that are actually published. Rebuilding Phase 6D invalidates
-the file cache automatically; the **Reload generated data** button is also
-available for an immediate manual refresh.
-
-### Development cohorts
-
-The explorer contains three related but distinct views:
-
-| Cohort | Definition | Purpose |
-|---|---|---|
-| Broad | All eligible athletes | Primary measure of whole-program development |
-| Frontier | Baseline level 70+ | Development near the performance frontier |
-| Elite | Baseline level 80+ | Development among athletes beginning at an elite level |
-| National Elite Finishers | Endpoint level 90+ | Development into nationally elite performance |
-| Championship-Caliber Finishers | Endpoint level 95+ | Development among the most extreme finishers |
-
-The cohort views do not add bonus points to the broad score. They restrict
-the analyzed trajectories and rerun the same uncertainty-adjusted school
-ranking framework.
-
-The 95+ cohort is especially sparse. It is useful for exploratory comparison
-with championship-level programs, but it is not itself a projected NCAA team
-points ranking.
-
-### Primary question
-
-The explorer answers:
-
-> Which schools developed the selected athlete cohort more than expected
-> by the endpoint season?
-
-It does not estimate championship points or current roster strength.
-
-### Score
+**Average Development** is the preserved earlier empirical-Bayes school-average
+model. Its School Profile chart plots:
 
 ```text
-athlete value added
-= observed normalized improvement
-− expected normalized improvement
+season-centered posterior score
+= posterior school score − national mean for the same season and scope
 ```
 
-The school score is an empirical-Bayes average of equal-weight
-athlete-school contributions.
+That chart is useful as a secondary efficiency-oriented view, but it is not the
+Enhanced Balanced Production trend. Use **Program Trends** for the official
+Milestone 7 trajectory and **School Profile** when reviewing the preserved
+Average Development model.
 
-### Season-relative score
+### Interpretation limits
 
-```text
-season-relative score
-= posterior school score
-− national mean for the same season, scope, and cohort
-```
-
-This is the preferred score for comparing a school across different
-seasons.
-
-### Published ranks
-
-A school receives a published rank only when:
-
-- its sample reaches the cohort- and scope-specific minimum;
-- at least five schools qualify in the partition;
-- detectable between-school variance remains after uncertainty
-  adjustment.
-
-When no separation is detectable, the explorer reports a tie/no-separation
-condition instead of presenting false co-leaders.
-
-### Development versus championship strength
-
-Even the Elite view measures improvement relative to expectation. A future
-championship-strength product will instead emphasize current national-caliber
-marks, qualifying probability, relays, and likely NCAA scoring.
+The results are observational. Sparse cohorts and partitions can have limited
+history, and a high rank movement can reflect changes in both the school and
+its national peer set. Always review sample counts, available seasons, and the
+underlying event/group tables alongside a headline rank.
         """
     )
 
+@st.cache_data(show_spinner=False)
+def load_milestone7_table(
+    database_path: str,
+    modified_ns: int,
+    size_bytes: int,
+    table_name: str,
+) -> pd.DataFrame:
+    """Load one curated Milestone 7 table with cache invalidation."""
+    del modified_ns, size_bytes
+    allowed = set(MILESTONE7_TABLES.values())
+    if table_name not in allowed:
+        raise ValueError(f"Unregistered Milestone 7 table: {table_name}")
+
+    connection = duckdb.connect(database_path, read_only=True)
+    try:
+        return connection.execute(
+            f"SELECT * FROM {table_name}"
+        ).fetchdf()
+    finally:
+        connection.close()
+
+
+def milestone7_table(table_key: str) -> pd.DataFrame:
+    if table_key not in MILESTONE7_TABLES:
+        raise KeyError(f"Unknown Milestone 7 table key: {table_key}")
+    if not MILESTONE7_DB.exists():
+        st.error(
+            "The final Milestone 7 publication database was not found."
+        )
+        st.code(str(MILESTONE7_DB))
+        st.info(
+            "Run the Phase 7D final-publication builder, then refresh."
+        )
+        st.stop()
+
+    stat = MILESTONE7_DB.stat()
+    return load_milestone7_table(
+        str(MILESTONE7_DB),
+        stat.st_mtime_ns,
+        stat.st_size,
+        MILESTONE7_TABLES[table_key],
+    )
+
+
+def milestone7_reload_button(key: str) -> None:
+    if st.button(
+        "Reload Milestone 7 data",
+        key=key,
+        help="Clear cached tables after rebuilding the Phase 7D database.",
+    ):
+        st.cache_data.clear()
+        st.rerun()
+
+
+def friendly_scope(value: object) -> str:
+    labels = {
+        "production_overall_combined": "Overall — Combined",
+        "production_overall_gender": "Overall — By Gender",
+    }
+    return labels.get(str(value), str(value).replace("_", " ").title())
+
+
+def friendly_direction(value: object) -> str:
+    if pd.isna(value):
+        return "—"
+    labels = {
+        "rising_aligned": "Rising",
+        "falling_aligned": "Falling",
+        "score_up_rank_down": "Score up / rank down",
+        "score_down_rank_up": "Score down / rank up",
+        "stable": "Stable",
+        "mixed": "Mixed signals",
+        "insufficient_history": "Insufficient history",
+        "unavailable": "Unavailable",
+    }
+    key = str(value)
+    return labels.get(key, key.replace("_", " ").title())
+
+
+def percentile_text(value: object) -> str:
+    if pd.isna(value):
+        return "—"
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return "—"
+    if not math.isfinite(numeric):
+        return "—"
+    return f"{100.0 * numeric:.1f}%"
+
+
+def compact_number(value: object) -> str:
+    if pd.isna(value):
+        return "—"
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return "—"
+    if not math.isfinite(numeric):
+        return "—"
+
+    absolute = abs(numeric)
+    if absolute >= 1_000_000:
+        return f"{numeric / 1_000_000:.2f}M"
+    if absolute >= 1_000:
+        return f"{numeric / 1_000:.1f}K"
+    return f"{numeric:,.2f}"
+
+def select_program_partition(
+    frame: pd.DataFrame,
+    *,
+    key_prefix: str,
+    include_endpoint: bool,
+    trend_mode: bool = False,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    filtered = frame.copy()
+    filtered = filtered[
+        ~filtered["cohort_key"]
+        .astype(str)
+        .isin(MILESTONE7_EXCLUDED_COHORT_KEYS)
+    ].copy()
+    selected: dict[str, object] = {}
+
+    if trend_mode:
+        c1, c2, c3 = st.columns(3)
+        season_types = sorted(
+            filtered["season_type"].dropna().astype(str).unique(),
+            key=lambda value: (value != "outdoor", value),
+        )
+        with c1:
+            season_type = st.selectbox(
+                "Season type",
+                season_types,
+                format_func=lambda value: str(value).title(),
+                key=f"{key_prefix}_season_type_v3",
+            )
+        filtered = filtered[
+            filtered["season_type"].astype(str) == season_type
+        ]
+        selected["season_type"] = season_type
+
+        scopes = sorted(filtered["ranking_scope"].dropna().astype(str).unique())
+        with c2:
+            ranking_scope = st.selectbox(
+                "Ranking scope",
+                scopes,
+                format_func=friendly_scope,
+                key=f"{key_prefix}_scope_v3",
+            )
+        filtered = filtered[
+            filtered["ranking_scope"].astype(str) == ranking_scope
+        ]
+        selected["ranking_scope"] = ranking_scope
+
+        genders = sorted(filtered["gender_scope"].dropna().astype(str).unique())
+        with c3:
+            gender_scope = st.selectbox(
+                "Gender",
+                genders,
+                format_func=format_gender,
+                key=f"{key_prefix}_gender_v3",
+            )
+        filtered = filtered[
+            filtered["gender_scope"].astype(str) == gender_scope
+        ]
+        selected["gender_scope"] = gender_scope
+
+        counts = MILESTONE7_TREND_SEASON_COUNTS.get(season_type, {})
+        cohorts = (
+            filtered[["cohort_key", "cohort_label"]]
+            .drop_duplicates()
+            .copy()
+        )
+        cohorts["season_count"] = (
+            cohorts["cohort_key"].astype(str).map(counts).fillna(0).astype(int)
+        )
+        cohorts = cohorts[cohorts["season_count"] >= 3].copy()
+        priority = (
+            [
+                "broad_all_athletes",
+                "frontier_70_plus",
+                "elite_80_plus",
+                "national_elite_endpoint_90_plus",
+            ]
+            if season_type == "outdoor"
+            else [
+                "frontier_70_plus",
+                "elite_80_plus",
+                "national_elite_endpoint_90_plus",
+            ]
+        )
+        order = {key: index for index, key in enumerate(priority)}
+        cohorts["_order"] = cohorts["cohort_key"].astype(str).map(order).fillna(99)
+        cohorts = cohorts.sort_values(["_order", "cohort_label"])
+        cohort_keys = cohorts["cohort_key"].astype(str).tolist()
+        label_map = {
+            str(row.cohort_key): (
+                f"{row.cohort_label} · {int(row.season_count)} seasons"
+            )
+            for row in cohorts.itertuples()
+        }
+        raw_label_map = {
+            str(row.cohort_key): str(row.cohort_label)
+            for row in cohorts.itertuples()
+        }
+
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            cohort_key = st.selectbox(
+                "Development cohort",
+                cohort_keys,
+                format_func=lambda value: label_map.get(str(value), str(value)),
+                key=f"{key_prefix}_cohort_v3",
+            )
+        filtered = filtered[
+            filtered["cohort_key"].astype(str) == str(cohort_key)
+        ]
+        selected.update(
+            cohort_key=str(cohort_key),
+            cohort_label=raw_label_map.get(str(cohort_key), str(cohort_key)),
+        )
+
+        windows = sorted(filtered["window_years"].dropna().astype(int).unique())
+        with c2:
+            window_years = st.selectbox(
+                "Trend window",
+                windows,
+                format_func=lambda value: f"{int(value)} calendar years",
+                key=f"{key_prefix}_window_v3",
+            )
+        filtered = filtered[
+            filtered["window_years"].astype(int) == int(window_years)
+        ]
+        selected["window_years"] = int(window_years)
+
+        with c3:
+            st.caption(
+                "Trend mode shows only cohorts with at least three "
+                "registered seasons. Broad Indoor remains available under "
+                "Rankings, but not as a multi-season trend."
+            )
+        return filtered.copy(), selected
+
+    cohorts = (
+        filtered[["cohort_key", "cohort_label"]]
+        .drop_duplicates()
+        .sort_values("cohort_label")
+    )
+    cohort_keys = cohorts["cohort_key"].astype(str).tolist()
+    label_map = {
+        str(row.cohort_key): str(row.cohort_label)
+        for row in cohorts.itertuples()
+    }
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        cohort_key = st.selectbox(
+            "Development cohort",
+            cohort_keys,
+            format_func=lambda value: label_map.get(str(value), str(value)),
+            key=f"{key_prefix}_cohort",
+        )
+    filtered = filtered[
+        filtered["cohort_key"].astype(str) == str(cohort_key)
+    ]
+    selected.update(
+        cohort_key=str(cohort_key),
+        cohort_label=label_map.get(str(cohort_key), str(cohort_key)),
+    )
+
+    scopes = sorted(filtered["ranking_scope"].dropna().astype(str).unique())
+    with c2:
+        ranking_scope = st.selectbox(
+            "Ranking scope",
+            scopes,
+            format_func=friendly_scope,
+            key=f"{key_prefix}_scope",
+        )
+    filtered = filtered[
+        filtered["ranking_scope"].astype(str) == ranking_scope
+    ]
+    selected["ranking_scope"] = ranking_scope
+
+    genders = sorted(filtered["gender_scope"].dropna().astype(str).unique())
+    with c3:
+        gender_scope = st.selectbox(
+            "Gender",
+            genders,
+            format_func=format_gender,
+            key=f"{key_prefix}_gender",
+        )
+    filtered = filtered[
+        filtered["gender_scope"].astype(str) == gender_scope
+    ]
+    selected["gender_scope"] = gender_scope
+
+    c1, c2, c3 = st.columns(3)
+    season_types = sorted(
+        filtered["season_type"].dropna().astype(str).unique(),
+        key=lambda value: (value != "outdoor", value),
+    )
+    with c1:
+        season_type = st.selectbox(
+            "Season type",
+            season_types,
+            format_func=lambda value: str(value).title(),
+            key=f"{key_prefix}_season_type",
+        )
+    filtered = filtered[
+        filtered["season_type"].astype(str) == season_type
+    ]
+    selected["season_type"] = season_type
+
+    windows = sorted(filtered["window_years"].dropna().astype(int).unique())
+    with c2:
+        window_years = st.selectbox(
+            "Trend window",
+            windows,
+            format_func=lambda value: f"{int(value)} calendar years",
+            key=f"{key_prefix}_window",
+        )
+    filtered = filtered[
+        filtered["window_years"].astype(int) == int(window_years)
+    ]
+    selected["window_years"] = int(window_years)
+
+    if include_endpoint:
+        endpoints = sorted(
+            filtered["endpoint_year"].dropna().astype(int).unique(),
+            reverse=True,
+        )
+        with c3:
+            endpoint_year = st.selectbox(
+                "Endpoint year",
+                endpoints,
+                key=f"{key_prefix}_endpoint",
+            )
+        filtered = filtered[
+            filtered["endpoint_year"].astype(int) == int(endpoint_year)
+        ]
+        selected["endpoint_year"] = int(endpoint_year)
+
+    return filtered.copy(), selected
+
+def program_trends_page() -> None:
+    st.subheader("Program Trends")
+    st.caption(
+        "Audited Enhanced Balanced Production trajectories using exact "
+        "same-season previous-year comparisons and three-/five-calendar-year "
+        "windows. Missing seasons remain explicit gaps."
+    )
+    milestone7_reload_button("reload_milestone7_trends")
+
+    latest = milestone7_table("latest_summary")
+    if latest.empty:
+        st.info("No Milestone 7 program summaries are available.")
+        return
+
+    controls, selected = select_program_partition(
+        latest,
+        key_prefix="m7_trends",
+        include_endpoint=False,
+        trend_mode=True,
+    )
+    schools = (
+        controls[["resolved_school_id", "school_name"]]
+        .drop_duplicates()
+        .sort_values("school_name")
+    )
+    if schools.empty:
+        st.info("No schools are available for this partition.")
+        return
+
+    school_name = st.selectbox(
+        "School",
+        schools["school_name"].astype(str).tolist(),
+        key="m7_trends_school",
+    )
+    school_id = schools.loc[
+        schools["school_name"].astype(str) == school_name,
+        "resolved_school_id",
+    ].iloc[0]
+    row = controls[controls["resolved_school_id"] == school_id].iloc[0]
+
+    st.markdown(f"### {school_name}")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Latest season", str(row.get("latest_season_label", "—")))
+    c2.metric("Latest rank", safe_number(row.get("latest_source_rank"), 0))
+    c3.metric("Performance", percentile_text(row.get("performance_percentile")))
+    c4.metric(
+        f"{int(selected['window_years'])}-year trajectory",
+        friendly_direction(row.get("trajectory_direction")),
+    )
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Momentum", percentile_text(row.get("momentum_percentile")))
+    c2.metric("Consistency", percentile_text(row.get("consistency_percentile")))
+    c3.metric(
+        "National momentum rank",
+        safe_number(row.get("momentum_rank"), 0),
+    )
+    c4.metric(
+        "Recent YoY rank change",
+        safe_number(row.get("latest_yoy_rank_improvement"), 0),
+    )
+
+    st.caption(
+        "Performance compares average rank strength, momentum compares the "
+        "rank-strength slope, and consistency rewards lower seasonal "
+        "variation within the selected national partition."
+    )
+
+    st.markdown("#### Overall seasonal history")
+    series = milestone7_table("overall_season")
+    series = series[
+        (series["model_key"] == "enhanced_balanced_production")
+        & (series["cohort_key"].astype(str) == str(selected["cohort_key"]))
+        & (series["ranking_scope"].astype(str) == str(selected["ranking_scope"]))
+        & (series["gender_scope"].astype(str) == str(selected["gender_scope"]))
+        & (series["season_type"].astype(str) == str(selected["season_type"]))
+        & (series["resolved_school_id"] == school_id)
+    ].copy()
+    series = series.sort_values("season_year")
+
+    if series.empty:
+        st.info("No overall seasonal history is available.")
+    else:
+        score_chart = series[
+            ["season_year", "rank_strength_percentile"]
+        ].dropna(subset=["rank_strength_percentile"])
+
+        if score_chart.empty:
+            st.info("No rank-strength observations are available to chart.")
+        else:
+            seasonal_chart = (
+                alt.Chart(score_chart)
+                .mark_line(point=True)
+                .encode(
+                    x=alt.X(
+                        "season_year:O",
+                        title="Season year",
+                        axis=alt.Axis(labelAngle=0),
+                    ),
+                    y=alt.Y(
+                        "rank_strength_percentile:Q",
+                        title="National rank-strength percentile",
+                        scale=alt.Scale(domain=[0, 1]),
+                        axis=alt.Axis(format=".0%"),
+                    ),
+                    tooltip=[
+                        alt.Tooltip("season_year:O", title="Season year"),
+                        alt.Tooltip(
+                            "rank_strength_percentile:Q",
+                            title="Rank strength",
+                            format=".1%",
+                        ),
+                    ],
+                )
+                .properties(height=360)
+            )
+            st.altair_chart(seasonal_chart, width="stretch")
+
+            observation_count = len(score_chart)
+            if observation_count == 1:
+                st.info(
+                    "Only one season is available for this exact cohort, "
+                    "scope, gender, and season type. The observation is "
+                    "shown as a point, but momentum, consistency, and a "
+                    "trajectory require at least three eligible seasons. "
+                    "For deeper indoor history, try Frontier 70+ or "
+                    "National Elite Finishers 90+."
+                )
+            elif observation_count == 2:
+                st.info(
+                    "Two seasons are visible, but audited slope-based trend "
+                    "labels require at least three eligible observations."
+                )
+
+        history_columns = [
+            "season_label",
+            "source_rank",
+            "ranked_school_count",
+            "rank_strength_percentile",
+            "primary_metric_value",
+            "positive_share",
+            "net_share",
+            "scoring_breadth",
+            "athlete_unit_count",
+        ]
+        history_columns = [
+            column for column in history_columns if column in series.columns
+        ]
+        history = series[history_columns].rename(
+            columns={
+                "season_label": "Season",
+                "source_rank": "Rank",
+                "ranked_school_count": "Ranked schools",
+                "rank_strength_percentile": "Rank strength",
+                "primary_metric_value": "Enhanced points",
+                "positive_share": "Positive share",
+                "net_share": "Net share",
+                "scoring_breadth": "Scoring breadth",
+                "athlete_unit_count": "Athlete-event units",
+            }
+        )
+        st.dataframe(
+            history,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "Rank strength": st.column_config.NumberColumn(
+                    format="percent",
+                ),
+                "Positive share": st.column_config.NumberColumn(
+                    format="percent",
+                ),
+                "Net share": st.column_config.NumberColumn(
+                    format="percent",
+                ),
+                "Scoring breadth": st.column_config.NumberColumn(
+                    format="percent",
+                ),
+            },
+        )
+
+    st.markdown("#### Exact year-over-year movement")
+    yoy = milestone7_table("overall_yoy")
+    yoy = yoy[
+        (yoy["model_key"] == "enhanced_balanced_production")
+        & (yoy["cohort_key"].astype(str) == str(selected["cohort_key"]))
+        & (yoy["ranking_scope"].astype(str) == str(selected["ranking_scope"]))
+        & (yoy["gender_scope"].astype(str) == str(selected["gender_scope"]))
+        & (yoy["season_type"].astype(str) == str(selected["season_type"]))
+        & (yoy["resolved_school_id"] == school_id)
+    ].copy()
+    yoy = yoy.sort_values("current_season_year", ascending=False)
+    yoy_columns = [
+        "current_season_label",
+        "previous_season_label",
+        "comparison_status",
+        "primary_metric_delta",
+        "rank_improvement",
+        "rank_strength_delta",
+        "positive_share_delta",
+        "net_share_delta",
+        "scoring_breadth_delta",
+    ]
+    yoy_columns = [column for column in yoy_columns if column in yoy.columns]
+    st.dataframe(
+        yoy[yoy_columns].head(12),
+        width="stretch",
+        hide_index=True,
+    )
+
+    left, right = st.columns(2)
+    with left:
+        st.markdown("#### Event-group profile")
+        groups = milestone7_table("group_window")
+        groups = groups[
+            (groups["model_key"] == "enhanced_balanced_production")
+            & (groups["cohort_key"].astype(str) == str(selected["cohort_key"]))
+            & (groups["gender_scope"].astype(str) == str(selected["gender_scope"]))
+            & (groups["season_type"].astype(str) == str(selected["season_type"]))
+            & (groups["window_years"].astype(int) == int(selected["window_years"]))
+            & (groups["resolved_school_id"] == school_id)
+        ].copy()
+        if not groups.empty:
+            endpoint = int(groups["endpoint_year"].max())
+            groups = groups[groups["endpoint_year"].astype(int) == endpoint]
+            group_columns = [
+                "balanced_group_label",
+                "mean_rank_strength_percentile",
+                "rank_strength_slope_per_year",
+                "eligible_observation_count",
+            ]
+            group_columns = [c for c in group_columns if c in groups.columns]
+            st.dataframe(
+                groups[group_columns].sort_values(
+                    "mean_rank_strength_percentile",
+                    ascending=False,
+                    na_position="last",
+                ),
+                width="stretch",
+                hide_index=True,
+            )
+        else:
+            st.info("No group trend rows are available.")
+
+    with right:
+        st.markdown("#### Individual-event profile")
+        events = milestone7_table("event_window")
+        events = events[
+            (events["model_key"] == "enhanced_balanced_production")
+            & (events["cohort_key"].astype(str) == str(selected["cohort_key"]))
+            & (events["gender_scope"].astype(str) == str(selected["gender_scope"]))
+            & (events["season_type"].astype(str) == str(selected["season_type"]))
+            & (events["window_years"].astype(int) == int(selected["window_years"]))
+            & (events["resolved_school_id"] == school_id)
+        ].copy()
+        if not events.empty:
+            endpoint = int(events["endpoint_year"].max())
+            events = events[events["endpoint_year"].astype(int) == endpoint]
+            event_columns = [
+                "canonical_event_name",
+                "balanced_group_label",
+                "mean_rank_strength_percentile",
+                "rank_strength_slope_per_year",
+                "eligible_observation_count",
+            ]
+            event_columns = [c for c in event_columns if c in events.columns]
+            st.dataframe(
+                events[event_columns].sort_values(
+                    "mean_rank_strength_percentile",
+                    ascending=False,
+                    na_position="last",
+                ).head(15),
+                width="stretch",
+                hide_index=True,
+            )
+        else:
+            st.info("No event trend rows are available.")
+
+
+def program_comparison_page() -> None:
+    st.subheader("Program Comparison")
+    st.caption(
+        "Compare two schools inside the exact same Enhanced Balanced "
+        "Production cohort, scope, gender, endpoint, season type, and trend "
+        "window. Percentiles are national within that partition."
+    )
+    milestone7_reload_button("reload_milestone7_comparison")
+
+    summary = milestone7_table("program_summary")
+    if summary.empty:
+        st.info("No comparison-ready program rows are available.")
+        return
+
+    controls, selected = select_program_partition(
+        summary,
+        key_prefix="m7_compare",
+        include_endpoint=True,
+    )
+    schools = (
+        controls[["resolved_school_id", "school_name"]]
+        .drop_duplicates()
+        .sort_values("school_name")
+    )
+    school_names = schools["school_name"].astype(str).tolist()
+    if len(school_names) < 2:
+        st.info("At least two schools are required in this partition.")
+        return
+
+    left, right = st.columns(2)
+    with left:
+        school_a = st.selectbox(
+            "School A",
+            school_names,
+            index=0,
+            key="m7_compare_school_a",
+        )
+    remaining = [name for name in school_names if name != school_a]
+    with right:
+        school_b = st.selectbox(
+            "School B",
+            remaining,
+            index=0,
+            key="m7_compare_school_b",
+        )
+
+    selected_rows = controls[
+        controls["school_name"].astype(str).isin([school_a, school_b])
+    ].copy()
+    selected_rows = selected_rows.sort_values("school_name")
+
+    comparison_columns = [
+        "school_name",
+        "conference_name",
+        "latest_season_label",
+        "latest_source_rank",
+        "performance_percentile",
+        "momentum_percentile",
+        "consistency_percentile",
+        "mean_rank_strength_percentile",
+        "rank_strength_slope_per_year",
+        "performance_rank",
+        "momentum_rank",
+        "consistency_rank",
+        "conference_performance_rank",
+        "conference_momentum_rank",
+        "conference_consistency_rank",
+        "trajectory_direction",
+        "rise_fall_status",
+        "strongest_group",
+        "fastest_rising_group",
+        "strongest_event",
+        "fastest_rising_event",
+        "indoor_outdoor_profile",
+    ]
+    comparison_columns = [
+        column for column in comparison_columns if column in selected_rows.columns
+    ]
+    display = selected_rows[comparison_columns].rename(
+        columns={
+            "school_name": "School",
+            "conference_name": "Conference",
+            "latest_season_label": "Latest season",
+            "latest_source_rank": "Latest rank",
+            "performance_percentile": "Performance percentile",
+            "momentum_percentile": "Momentum percentile",
+            "consistency_percentile": "Consistency percentile",
+            "mean_rank_strength_percentile": "Mean rank strength",
+            "rank_strength_slope_per_year": "Rank-strength slope",
+            "performance_rank": "National performance rank",
+            "momentum_rank": "National momentum rank",
+            "consistency_rank": "National consistency rank",
+            "conference_performance_rank": "Conference performance rank",
+            "conference_momentum_rank": "Conference momentum rank",
+            "conference_consistency_rank": "Conference consistency rank",
+            "trajectory_direction": "Trajectory",
+            "rise_fall_status": "Recent rise/fall",
+            "strongest_group": "Strongest group",
+            "fastest_rising_group": "Fastest-rising group",
+            "strongest_event": "Strongest event",
+            "fastest_rising_event": "Fastest-rising event",
+            "indoor_outdoor_profile": "Indoor/outdoor profile",
+        }
+    )
+    st.dataframe(display, width="stretch", hide_index=True)
+
+    st.markdown("#### Comparable percentile profile")
+    metrics = milestone7_table("metric_long")
+    metrics = metrics[
+        (metrics["cohort_key"].astype(str) == str(selected["cohort_key"]))
+        & (metrics["ranking_scope"].astype(str) == str(selected["ranking_scope"]))
+        & (metrics["gender_scope"].astype(str) == str(selected["gender_scope"]))
+        & (metrics["season_type"].astype(str) == str(selected["season_type"]))
+        & (metrics["window_years"].astype(int) == int(selected["window_years"]))
+        & (metrics["endpoint_year"].astype(int) == int(selected["endpoint_year"]))
+        & metrics["school_name"].astype(str).isin([school_a, school_b])
+        & metrics["metric_family"].astype(str).isin(["percentile", "coverage"])
+    ].copy()
+
+    if not metrics.empty:
+        chart = metrics.pivot_table(
+            index="metric_label",
+            columns="school_name",
+            values="metric_value",
+            aggfunc="first",
+        )
+        st.bar_chart(
+            chart,
+            horizontal=True,
+            x_label="Percentile or coverage rate",
+            y_label="Metric",
+        )
+        st.dataframe(
+            chart.reset_index(),
+            width="stretch",
+            hide_index=True,
+        )
+
+    st.markdown("#### Same-year indoor versus outdoor history")
+    io = milestone7_table("indoor_outdoor")
+    selected_ids = schools[
+        schools["school_name"].astype(str).isin([school_a, school_b])
+    ]["resolved_school_id"].tolist()
+    io = io[
+        (io["cohort_key"].astype(str) == str(selected["cohort_key"]))
+        & (io["ranking_scope"].astype(str) == str(selected["ranking_scope"]))
+        & (io["gender_scope"].astype(str) == str(selected["gender_scope"]))
+        & io["resolved_school_id"].isin(selected_ids)
+        & io["is_comparable"].fillna(False)
+    ].copy()
+    io = io.sort_values(["season_year", "school_name"], ascending=[False, True])
+    io_columns = [
+        "season_year",
+        "school_name",
+        "indoor_rank",
+        "outdoor_rank",
+        "outdoor_rank_improvement",
+        "outdoor_minus_indoor_rank_strength",
+        "outdoor_minus_indoor_primary_metric",
+        "outdoor_minus_indoor_scoring_breadth",
+    ]
+    io_columns = [column for column in io_columns if column in io.columns]
+    if io.empty:
+        st.info("No exact same-year indoor/outdoor comparisons are available.")
+    else:
+        st.dataframe(
+            io[io_columns],
+            width="stretch",
+            hide_index=True,
+        )
+
+    csv_bytes = display.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "Download school comparison",
+        data=csv_bytes,
+        file_name="milestone7_program_comparison.csv",
+        mime="text/csv",
+    )
+
+
+
+def average_development_hub_page() -> None:
+    st.subheader("Average Development")
+    st.caption(
+        "Preserved empirical-Bayes companion model from Milestones 5–6. "
+        "These pages are separate from the official Enhanced Balanced "
+        "Production rankings."
+    )
+    view = st.radio(
+        "Average Development view",
+        ["Rankings", "School Profile", "Supplemental Rankings"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="average_development_subpage",
+    )
+    st.divider()
+
+    if view == "Rankings":
+        rankings_page()
+    elif view == "School Profile":
+        school_profile_page()
+    else:
+        additional_rankings_page()
 
 def main() -> None:
     configure_page()
@@ -2760,8 +4719,9 @@ def main() -> None:
 
     st.title(APP_TITLE)
     st.caption(
-        "Official Milestone 6 NCAA Division I development rankings, "
-        "preserved companion models, and final fairness diagnostics."
+        "Official NCAA Division I development rankings, Milestone 7 "
+        "program trajectories, peer comparisons, and preserved companion "
+        "models."
     )
 
     loaded_versions: list[str] = []
@@ -2793,44 +4753,47 @@ def main() -> None:
 
     loaded_versions = sorted(set(loaded_versions))
     if loaded_versions:
-        st.caption(
-            "Loaded datasets: " + ", ".join(loaded_versions)
-        )
+        with st.expander("Data version details", expanded=False):
+            st.caption(
+                "Loaded datasets: " + ", ".join(loaded_versions)
+            )
+
+    st.markdown("### Explore")
+    navigation_label = st.radio(
+        "Explorer page",
+        list(MILESTONE7_NAVIGATION),
+        horizontal=True,
+        label_visibility="collapsed",
+        key="top_explorer_navigation",
+    )
+    page = MILESTONE7_NAVIGATION[navigation_label]
 
     with st.sidebar:
-        st.header("Explore")
-        page = st.radio(
-            "Page",
-            [
-                "Event-Balanced Points",
-                "Model Diagnostics",
-                "Average Development",
-                "School Profile",
-                "Season Coverage",
-                "Methodology",
-            ],
-        )
-        st.divider()
+        st.header("About")
         st.markdown(
             """
-**Official Milestone 6 ranking:** Enhanced Balanced Production is
-frozen as the primary model. Original v4.1 remains selectable, and Average
-Development remains the efficiency-oriented companion page. Steeplechase is
-included in Distance.
+**Official model:** Enhanced Balanced Production
 
-These remain development rankings, not projected NCAA championship points.
-Endpoint 90+ is provisional; Endpoint 95+ is exploratory.
+Program Trends and Program Comparison use the frozen Milestone 7 publication.
+School Profile and Average Development preserve the earlier empirical-Bayes
+model as a clearly labeled secondary view.
+
+These are athlete-development rankings, not projected NCAA championship
+points. Endpoint 90+ is provisional; the sparse Endpoint 95+ view is retained
+in the data publication but hidden from the explorer.
             """
         )
 
     if page == "Event-Balanced Points":
-        event_balanced_points_page()
+        rankings_hub_page()
     elif page == "Model Diagnostics":
         model_diagnostics_page()
+    elif page == "Program Trends":
+        program_trends_page()
+    elif page == "Program Comparison":
+        program_comparison_page()
     elif page == "Average Development":
-        rankings_page()
-    elif page == "School Profile":
-        school_profile_page()
+        average_development_hub_page()
     elif page == "Season Coverage":
         season_summary_page()
     else:
