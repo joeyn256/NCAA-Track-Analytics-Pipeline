@@ -836,7 +836,7 @@ def load_csv(
 
 
 def load_csv_file(path: Path) -> pd.DataFrame:
-    stat = path.stat()
+    stat = PUBLIC_DATABASE_PATH.stat()
     return load_csv(
         str(path),
         stat.st_mtime_ns,
@@ -865,21 +865,7 @@ def require_data() -> None:
         for filename in ALL_TIME_AVERAGE_FILES.values()
     )
 
-    missing = sorted(str(path) for path in required if not path.exists())
-
-    if missing:
-        st.error(
-            "The explorer could not find the required Milestone 5 "
-            "all-time publication or Milestone 6 publication files."
-        )
-        st.code("\n".join(missing))
-        st.info(
-            "Confirm the frozen Milestone 5 publication and final "
-            "Milestone 6 publication exist, then refresh this page."
-        )
-        st.stop()
-
-
+    # Milestone 8 resolves these resources through the compact public DuckDB.
 def cohort_frame(
     cohort_label: str,
     filename: str,
@@ -2785,18 +2771,7 @@ def additional_rankings_page() -> None:
         "metrics, not Enhanced Balanced Production points."
     )
 
-    missing = [
-        SUPPLEMENTAL_DATA_DIR / filename
-        for filename in SUPPLEMENTAL_FILES.values()
-        if not (SUPPLEMENTAL_DATA_DIR / filename).exists()
-    ]
-    if missing:
-        st.error(
-            "The supplemental Phase 5K publication files are missing."
-        )
-        st.code("\n".join(str(path) for path in missing))
-        return
-
+    # Milestone 8 resolves these resources through the compact public DuckDB.
     st.markdown("#### Current leaders")
     st.dataframe(
         supplemental_overview_table(),
