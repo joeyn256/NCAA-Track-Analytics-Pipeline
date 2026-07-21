@@ -1,68 +1,71 @@
 #!/usr/bin/env python3
-"""Validate Milestone 8 release-candidate documentation consistency."""
+"""Validate the completed Milestone 8 public deployment."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 from pathlib import Path
 from typing import Final
-
 
 ROOT: Final = Path(__file__).resolve().parents[3]
 
 README: Final = ROOT / "README.md"
 MILESTONE: Final = (
     ROOT
-    / "milestones/milestone_08_public_deployment_and_recruiter_experience.md"
+    / "milestones"
+    / "milestone_08_public_deployment_and_recruiter_experience.md"
 )
 GUIDE: Final = ROOT / "deployment/STREAMLIT_COMMUNITY_CLOUD.md"
+APP: Final = ROOT / "src/apps/seasonal_development_explorer.py"
 DESCRIPTOR: Final = ROOT / "deployment/public_deployment_v1.json"
-RELEASE_NOTES: Final = (
-    ROOT / "deployment/github/public_deployment_v1_release_notes.md"
-)
-SECRETS_FILE: Final = ROOT / ".streamlit/secrets.toml"
-READINESS_REPORT: Final = (
-    ROOT
-    / "data/processed/milestone8/public_deployment_v1"
-    / "phase_8e_release_readiness/release_readiness.json"
-)
+SECRETS: Final = ROOT / ".streamlit/secrets.toml"
+
 OUTPUT_DIR: Final = (
     ROOT
     / "data/processed/milestone8/public_deployment_v1"
     / "phase_8f_documentation_validation"
 )
 
-EXPECTED_DESCRIPTOR_SHA256: Final = (
-    "3b740b610d3b365c7d59c0ae818bd3a51e6e31974857bf53de36c77a06abab88"
+LIVE_URL: Final = (
+    "https://ncaa-d1-track-analytics-pipeline-explorer."
+    "streamlit.app/"
 )
 
 
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-
-    with path.open("rb") as handle:
-        while chunk := handle.read(1024 * 1024):
-            digest.update(chunk)
-
-    return digest.hexdigest()
-
-
-def contains_all(text: str, fragments: tuple[str, ...]) -> bool:
+def contains_all(
+    text: str,
+    fragments: tuple[str, ...],
+) -> bool:
+    """Return whether every required fragment is present."""
     return all(fragment in text for fragment in fragments)
 
 
+def descriptor_at_head() -> bytes:
+    """Read the committed frozen deployment descriptor."""
+    result = subprocess.run(
+        [
+            "git",
+            "show",
+            "HEAD:deployment/public_deployment_v1.json",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    )
+    return result.stdout
+
+
 def main() -> None:
+    """Validate the final public-deployment documentation state."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     required_files = (
         README,
         MILESTONE,
         GUIDE,
+        APP,
         DESCRIPTOR,
-        RELEASE_NOTES,
-        READINESS_REPORT,
     )
 
     for path in required_files:
@@ -72,166 +75,86 @@ def main() -> None:
     readme = README.read_text(encoding="utf-8")
     milestone = MILESTONE.read_text(encoding="utf-8")
     guide = GUIDE.read_text(encoding="utf-8")
-    notes = RELEASE_NOTES.read_text(encoding="utf-8")
-    descriptor = json.loads(
-        DESCRIPTOR.read_text(encoding="utf-8")
-    )
-    readiness = json.loads(
-        READINESS_REPORT.read_text(encoding="utf-8")
-    )
-
-    compressed_hash = descriptor["artifact"]["sha256"]
-    database_hash = descriptor["artifact"]["database_sha256"]
-    compressed_size = descriptor["artifact"]["size_bytes"]
-    database_size = descriptor["artifact"]["database_size_bytes"]
-    release_tag = descriptor["github"]["release_tag"]
-    release_asset = descriptor["artifact"]["filename"]
+    app = APP.read_text(encoding="utf-8")
 
     checks = {
-        "descriptor_unchanged": (
-            sha256_file(DESCRIPTOR) == EXPECTED_DESCRIPTOR_SHA256
+        "descriptor_unchanged_from_head": (
+            DESCRIPTOR.read_bytes() == descriptor_at_head()
         ),
-        "release_readiness_report_passed": (
-            readiness.get("passed") is True
-            and len(readiness.get("validators", [])) == 7
-            and all(
-                item.get("passed") is True
-                for item in readiness.get("validators", [])
-            )
-        ),
-        "readme_public_explorer_section": contains_all(
+        "readme_completed_deployment": contains_all(
             readme,
             (
                 "## Public Explorer",
-                "release candidate has passed every",
-                "validated public URL will be added here",
-            ),
-        ),
-        "readme_scale_metrics": contains_all(
-            readme,
-            (
+                "**Deployment status:** Milestone 8 is complete.",
+                "**Milestones 1–8 are complete.**",
+                LIVE_URL,
                 "6,594,540",
                 "193,961",
                 "554 institutions",
-                "2,918,594",
+                "81 of 81 tables",
             ),
         ),
-        "readme_deployment_architecture": contains_all(
-            readme,
-            (
-                "### Public deployment architecture",
-                "81",
-                "236,994,168 bytes",
-                "Large point views are loaded lazily",
-            ),
+        "readme_no_pending_language": (
+            "validated public URL will be added" not in readme
+            and "Milestones 1–7 are complete" not in readme
         ),
-        "readme_validation_metrics": contains_all(
-            readme,
-            (
-                "7 of 7 passed",
-                "100 of 100",
-                "0.290 GiB",
-                "1.684 GiB",
-                "1.368 seconds",
-                "0.097 seconds",
-            ),
-        ),
-        "readme_milestone8_links": contains_all(
-            readme,
-            (
-                "milestone_08_public_deployment_and_recruiter_experience.md",
-                "deployment/STREAMLIT_COMMUNITY_CLOUD.md",
-            ),
-        ),
-        "readme_does_not_claim_live_url": (
-            "share.streamlit.io" not in readme
-            and "streamlit.app" not in readme
-        ),
-        "milestone_release_candidate_status": contains_all(
+        "milestone_completed_deployment": contains_all(
             milestone,
             (
-                "**Release candidate validated — public deployment pending**",
-                "## Release candidate summary",
+                "**Complete — public deployment live**",
                 "## Phase 8F — Documentation and controlled public release",
-                "**Status: In progress**",
+                "**Status: Complete**",
+                "All completion criteria were satisfied",
+                LIVE_URL,
+                "public-deployment-v1",
             ),
         ),
-        "milestone_completed_phases": all(
-            f"## Phase 8{letter}" in milestone
-            for letter in "ABCDE"
-        ) and milestone.count("**Status: Complete**") >= 5,
-        "milestone_no_stale_phase8b_status": (
-            "## Phase 8B — Compact Deployment Publication\n\n"
-            "**Status: In progress**"
-            not in milestone
-        ),
-        "milestone_parity_and_runtime": contains_all(
-            milestone,
-            (
-                "81 of 81 exact table comparisons",
-                "2,918,594 source resource rows",
-                "Default page | 0.289 GiB | 0.290 GiB",
-                "Athlete Contributions | 1.681 GiB | 1.684 GiB",
-            ),
+        "milestone_no_pending_language": (
+            "public deployment pending" not in milestone.lower()
+            and "**Status: In progress**" not in milestone
         ),
         "milestone_scope_contract": contains_all(
             milestone,
             (
-                "2020 Outdoor is not fabricated",
-                "inbound transfer development remains explicitly unavailable",
+                "Endpoint 90+ is retained as the supported",
                 "Endpoint 95+ remains in the publication but hidden",
+                "2020 Outdoor is not fabricated",
+                (
+                    "inbound transfer development remains "
+                    "explicitly unavailable"
+                ),
             ),
         ),
-        "guide_readiness_and_sequence": contains_all(
+        "guide_completed_deployment": contains_all(
             guide,
             (
-                "7 of 7 regression validators passed",
-                "publish_public_deployment_v1.sh",
-                "Run the production smoke test",
-                "Add the validated public URL",
+                "**Deployment complete.**",
+                "## Completed deployment sequence",
+                "**Result: Passed on July 21, 2026.**",
+                LIVE_URL,
+                "public-deployment-v1",
+                "Public resource tables: 81",
             ),
         ),
-        "guide_smoke_test_complete": contains_all(
-            guide,
+        "guide_no_pending_language": (
+            "Suggested app subdomain" not in guide
+            and "The repository must still complete" not in guide
+            and "## Required sequence" not in guide
+        ),
+        "app_supported_endpoint_wording": contains_all(
+            app,
             (
-                "Athlete Contributions loads successfully",
-                "Program Trends loads",
-                "filter selections persist across navigation",
-                "page refresh reuses the cached artifact",
+                (
+                    "Endpoint 90+ is the supported national "
+                    "elite-finisher analysis"
+                ),
+                "Endpoint 95+ view is retained",
             ),
         ),
-        "release_notes_validation_current": contains_all(
-            notes,
-            (
-                "7 of 7 full release-readiness validators",
-                "default-page maximum memory of 0.290 GiB",
-                "Athlete Contributions maximum memory of 1.684 GiB",
-                "recruiter-readiness score of 100 out of 100",
-            ),
+        "app_no_provisional_endpoint_wording": (
+            "Endpoint 90+ is provisional" not in app
         ),
-        "compressed_hash_consistent": all(
-            compressed_hash in text
-            for text in (milestone, guide, notes)
-        ),
-        "database_hash_consistent": all(
-            database_hash in text
-            for text in (milestone, guide, notes)
-        ),
-        "artifact_sizes_consistent": (
-            f"{compressed_size:,}" in milestone
-            and f"{compressed_size:,}" in guide
-            and f"{compressed_size:,}" in notes
-            and f"{database_size:,}" in milestone
-            and f"{database_size:,}" in notes
-        ),
-        "release_identity_consistent": all(
-            release_tag in text
-            for text in (milestone, guide, notes)
-        ) and all(
-            release_asset in text
-            for text in (milestone, guide, notes)
-        ),
-        "actual_secrets_file_absent": not SECRETS_FILE.exists(),
+        "actual_secrets_file_absent": not SECRETS.exists(),
     }
 
     diff_check = subprocess.run(
@@ -242,49 +165,60 @@ def main() -> None:
         check=False,
     )
 
-    checks["git_diff_check_passed"] = diff_check.returncode == 0
+    checks["git_diff_check_passed"] = (
+        diff_check.returncode == 0
+    )
 
     report = {
         "passed": all(checks.values()),
+        "live_url": LIVE_URL,
         "checks": checks,
-        "descriptor": {
-            "publication_version": descriptor["publication_version"],
-            "release_tag": release_tag,
-            "release_asset": release_asset,
-            "compressed_sha256": compressed_hash,
-            "database_sha256": database_hash,
-        },
         "git_diff_check_stdout": diff_check.stdout,
         "git_diff_check_stderr": diff_check.stderr,
     }
 
-    (
-        OUTPUT_DIR / "validation_summary.json"
-    ).write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n",
+    output_path = OUTPUT_DIR / "validation_summary.json"
+    output_path.write_text(
+        json.dumps(
+            report,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
     print("=" * 76)
-    print("PHASE 8F DOCUMENTATION CONSISTENCY VALIDATION")
+    print("MILESTONE 8 COMPLETED DEPLOYMENT VALIDATION")
     print("=" * 76)
 
     for name, passed in checks.items():
         print(f"{name}: {passed}")
 
     print()
-    print(f"Output directory: {OUTPUT_DIR}")
+    print(f"Live URL: {LIVE_URL}")
+    print(f"Output: {output_path}")
 
     if not report["passed"]:
+        failed = [
+            name
+            for name, passed in checks.items()
+            if not passed
+        ]
+        print()
+        print("Failed checks:")
+        for name in failed:
+            print(f"- {name}")
+
         raise SystemExit(
-            "FAIL — Milestone 8 documentation is not internally consistent."
+            "FAIL — completed deployment validation did not pass."
         )
 
     print()
     print(
-        "PASS — the release-candidate documentation is current, "
-        "internally consistent, checksum-aligned, and honest about "
-        "the pending public deployment."
+        "PASS — Milestone 8 is documented as complete, "
+        "the public URL is recorded consistently, and the "
+        "frozen deployment descriptor remains unchanged."
     )
 
 

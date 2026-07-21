@@ -2,15 +2,16 @@
 
 ## Status
 
-**Release candidate validated — public deployment pending**
+**Complete — public deployment live**
 
 Milestone 8 converts the local NCAA Division I Athlete Development Explorer
 into a portable, recruiter-accessible web application.
 
-The implementation and pre-release validation are complete. The remaining work
-is the controlled Git commit and merge, publication of the immutable GitHub
-Release asset, Streamlit Community Cloud deployment, public smoke testing, and
-insertion of the validated live URL into the repository documentation.
+The controlled Git merge, immutable GitHub Release, Streamlit Community
+Cloud deployment, clean cloud-runtime validation, anonymous-browser smoke test,
+and final URL documentation are complete.
+
+**Live application:** https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/
 
 Enhanced Balanced Production remains the official primary model.
 
@@ -345,21 +346,21 @@ Repository and security checks also passed:
 
 ## Phase 8F — Documentation and controlled public release
 
-**Status: In progress**
+**Status: Complete**
 
-The release candidate is ready for:
+Phase 8F completed the controlled production release:
 
-1. final documentation consistency validation;
-2. commit and push of `milestone-8`;
-3. merge into `main`;
-4. publication of release tag `public-deployment-v1`;
-5. upload of `ncaa_track_public_explorer_v1.duckdb.gz`;
-6. Streamlit Community Cloud deployment using Python 3.12;
-7. public URL smoke testing;
-8. insertion of the validated live URL into the README and this milestone file.
+1. committed and merged Milestone 8 into `main`;
+2. published the immutable `public-deployment-v1` GitHub Release;
+3. uploaded and independently checksum-verified the compressed release asset;
+4. independently checksum-verified the uncompressed compact DuckDB;
+5. deployed the explorer through Streamlit Community Cloud using Python 3.12;
+6. corrected legacy local-publication checks exposed by the clean cloud runtime;
+7. validated startup using only the released compact DuckDB;
+8. completed the public anonymous/incognito-browser production smoke test;
+9. documented the validated public application URL.
 
-No tag, release, public deployment, or public URL is claimed before those steps
-are completed.
+**Validated public URL:** https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/
 
 ## Deployment configuration
 
@@ -369,7 +370,7 @@ are completed.
 | Deployment branch | `main` |
 | Streamlit entrypoint | `src/apps/seasonal_development_explorer.py` |
 | Python version | `3.12` |
-| Suggested subdomain | `ncaa-track-development-explorer` |
+| Live application | `https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/` |
 | Release tag | `public-deployment-v1` |
 | Release asset | `ncaa_track_public_explorer_v1.duckdb.gz` |
 
@@ -397,7 +398,9 @@ The public explorer preserves the frozen analytical contracts:
 
 ## Completion criteria
 
-Milestone 8 is complete only when:
+**All completion criteria were satisfied on July 21, 2026.**
+
+Milestone 8 is complete because:
 
 - the implementation is committed and merged to `main`;
 - the GitHub Release asset is published and checksum-verified;

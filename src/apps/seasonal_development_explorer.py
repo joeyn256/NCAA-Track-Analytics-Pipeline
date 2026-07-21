@@ -5068,7 +5068,7 @@ School Profile and Average Development preserve the earlier empirical-Bayes
 model as a clearly labeled secondary view.
 
 These are athlete-development rankings, not projected NCAA championship
-points. Endpoint 90+ is provisional; the sparse Endpoint 95+ view is retained
+points. Endpoint 90+ is the supported national elite-finisher analysis; the sparse Endpoint 95+ view is retained
 in the data publication but hidden from the explorer.
             """
         )

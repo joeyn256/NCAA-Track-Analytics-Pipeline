@@ -10,12 +10,11 @@ program trends, specialized analyses, and an interactive Streamlit explorer.
 
 ## Public Explorer
 
-**Deployment status:** the Milestone 8 release candidate has passed every
-pre-release gate. The compact data artifact and application are ready for the
-controlled GitHub Release and Streamlit Community Cloud deployment sequence.
+**Deployment status:** Milestone 8 is complete. The compact public
+DuckDB is deployed through Streamlit Community Cloud and loads from the
+checksum-verified GitHub Release asset.
 
-The validated public URL will be added here after the release asset is
-published and the deployed application passes its production smoke test.
+**Live explorer:** [Open the NCAA Division I Athlete Development Explorer](https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/)
 
 The recruiter-facing explorer highlights:
 
@@ -401,9 +400,11 @@ Detailed methodology and audit evidence are available in the milestone files:
 
 ## Project Status
 
-**Milestones 1–7 are complete.**
+**Milestones 1–8 are complete.**
 
-The Milestone 8 implementation and full pre-release validation are complete.
-The release candidate is awaiting the controlled commit, merge, GitHub Release,
-Streamlit Community Cloud deployment, public smoke test, and final insertion of
-the validated live URL.
+The production system includes the official Enhanced Balanced Production
+rankings, seasonal program trends and comparisons, specialized analyses, the
+preserved Average Development companion model, an immutable public data
+release, and a live Streamlit explorer.
+
+**Public application:** https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/

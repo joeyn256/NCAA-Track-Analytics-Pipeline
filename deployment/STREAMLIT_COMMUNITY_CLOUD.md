@@ -2,20 +2,16 @@
 
 ## Readiness status
 
-The Milestone 8 release candidate passed the full pre-release audit on
-July 21, 2026:
+**Deployment complete.** The Milestone 8 release passed the full pre-release
+audit, the immutable GitHub Release asset was published and checksum-verified,
+the clean Streamlit runtime loaded the compact public DuckDB, and the
+application passed its anonymous-browser production smoke test.
 
-- 7 of 7 regression validators passed;
-- exact parity passed for all 81 resource tables;
-- frozen-source and compact-publication hashes passed;
-- recruiter-readiness scored 100 of 100;
-- the default page peaked at 0.290 GiB;
-- the heaviest tested point view peaked at 1.684 GiB;
-- no secrets, local paths, oversized tracked files, tags, or releases were
-  present.
-
-The repository must still complete the controlled Git, GitHub Release,
-Streamlit deployment, and public smoke-test sequence below.
+- Live application: `https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/`
+- Release tag: `public-deployment-v1`
+- Public resource tables: 81
+- Exact source-to-deployment table parity: 81 of 81
+- Failed hard checks: 0
 
 ## Deployment target
 
@@ -23,56 +19,24 @@ Streamlit deployment, and public smoke-test sequence below.
 - Branch: `main`
 - Entrypoint: `src/apps/seasonal_development_explorer.py`
 - Python: `3.12`
-- Suggested app subdomain: `ncaa-track-development-explorer`
+- Live application: `https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/`
 - Release tag: `public-deployment-v1`
 - Release asset: `ncaa_track_public_explorer_v1.duckdb.gz`
 - Compressed asset size: `236,994,168 bytes`
 - Uncompressed DuckDB size: `352,858,112 bytes`
 
-## Required sequence
+## Completed deployment sequence
 
-1. Complete the final documentation consistency gate.
-2. Commit the Milestone 8 implementation on `milestone-8`.
-3. Push `milestone-8` and review the remote branch.
-4. Merge the branch into `main`.
-5. Confirm `main` is clean and pushed.
-6. Run:
-
-   ```zsh
-   deployment/github/publish_public_deployment_v1.sh
-   ```
-
-7. Confirm the GitHub Release asset exists and matches:
-
-   ```text
-   Compressed SHA-256:
-   2a4aa9fd321dce96313d24cf532fbb8200d22847f6b6257138e0b49eed86432c
-
-   Uncompressed database SHA-256:
-   7ab85809ab11b24ba98b0d5878f41242cfad53e1a1cbd4008dde36ec0f046de4
-   ```
-
-8. Confirm the asset opens at:
-
-   `https://github.com/joeyn256/NCAA-Track-Analytics-Pipeline/releases/download/public-deployment-v1/ncaa_track_public_explorer_v1.duckdb.gz`
-
-9. In Streamlit Community Cloud, create an app using:
-
-   - Repository: `joeyn256/NCAA-Track-Analytics-Pipeline`
-   - Branch: `main`
-   - Main file path: `src/apps/seasonal_development_explorer.py`
-   - Python version: `3.12`
-
-10. Open **Advanced settings** and paste the contents of:
-
-    `deployment/streamlit/secrets.toml.example`
-
-11. Deploy and inspect the build logs.
-12. Run the production smoke test against the public URL.
-13. Add the validated public URL to:
-    - `README.md`;
-    - `milestones/milestone_08_public_deployment_and_recruiter_experience.md`.
-14. Commit and push the final URL/documentation update.
+1. Completed the final pre-release documentation consistency gate.
+2. Committed and merged Milestone 8 into `main`.
+3. Published and verified release tag `public-deployment-v1`.
+4. Uploaded and checksum-verified
+   `ncaa_track_public_explorer_v1.duckdb.gz`.
+5. Deployed the application from `main` using Python 3.12.
+6. Added Community Cloud secrets through the deployment interface.
+7. Validated clean startup using only the released compact DuckDB.
+8. Completed the production smoke test and anonymous-browser access check.
+9. Recorded the live URL in the repository documentation.
 
 ## Community Cloud secrets
 
@@ -106,6 +70,10 @@ When the configured DuckDB file is absent, the application:
 Partial downloads and temporary decompression files are removed on failure.
 
 ## Production smoke test
+
+**Result: Passed on July 21, 2026.**
+
+**Validated application:** `https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/`
 
 The public URL is acceptable only when all of the following pass:
 
