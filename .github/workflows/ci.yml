@@ -1,0 +1,179 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python 3.12 tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            -r requirements.txt \
+            -r requirements-dev.txt
+          python -m pip check
+
+      - name: Compile tracked Python files
+        run: |
+          git ls-files '*.py' -z \
+            | xargs -0 python -m py_compile
+
+      - name: Run targeted Ruff checks
+        run: |
+          python -m ruff check \
+            src/apps/deployment_data.py \
+            tests/test_deployment_data.py \
+            --output-format=concise
+
+      - name: Run automated tests
+        run: |
+          python -m pytest -q
+
+      - name: Enforce deployment-loader coverage
+        run: |
+          python -m coverage erase
+          python -m coverage run \
+            --branch \
+            --source=src.apps.deployment_data \
+            -m pytest \
+            -q \
+            tests/test_deployment_data.py
+          python -m coverage report \
+            -m \
+            --include='src/apps/deployment_data.py' \
+            --fail-under=100
+
+      - name: Check tracked-file sizes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          tracked = subprocess.check_output(
+              ["git", "ls-files", "-z"]
+          ).decode().split("\0")
+
+          oversized = []
+
+          for item in tracked:
+              if not item:
+                  continue
+
+              path = Path(item)
+
+              if path.is_file() and path.stat().st_size > 10 * 1024 * 1024:
+                  oversized.append(
+                      (path.stat().st_size, path)
+                  )
+
+          if oversized:
+              for size, path in oversized:
+                  print(
+                      f"Tracked file exceeds 10 MiB: "
+                      f"{size} bytes — {path}"
+                  )
+              raise SystemExit(1)
+
+          print("PASS — no tracked file exceeds 10 MiB.")
+          PY
+
+      - name: Check forbidden tracked artifacts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          tracked = subprocess.check_output(
+              ["git", "ls-files", "-z"]
+          ).decode().split("\0")
+
+          tracked = [
+              Path(item)
+              for item in tracked
+              if item
+          ]
+
+          forbidden_names = {
+              ".coverage",
+              "secrets.toml",
+          }
+
+          forbidden_suffixes = {
+              ".duckdb",
+              ".duckdb.gz",
+              ".db",
+              ".sqlite",
+              ".sqlite3",
+              ".pyc",
+          }
+
+          forbidden_parts = {
+              "__pycache__",
+              ".pytest_cache",
+              ".ruff_cache",
+              ".mypy_cache",
+          }
+
+          violations = []
+
+          for path in tracked:
+              if path.name in forbidden_names:
+                  violations.append(path)
+                  continue
+
+              if any(
+                  str(path).endswith(suffix)
+                  for suffix in forbidden_suffixes
+              ):
+                  violations.append(path)
+                  continue
+
+              if forbidden_parts.intersection(path.parts):
+                  violations.append(path)
+
+          allowed_secret_example = Path(
+              "deployment/streamlit/secrets.toml.example"
+          )
+          violations = [
+              path
+              for path in violations
+              if path != allowed_secret_example
+          ]
+
+          if violations:
+              print("Forbidden tracked artifacts:")
+              for path in violations:
+                  print(f"- {path}")
+              raise SystemExit(1)
+
+          print("PASS — no forbidden artifacts are tracked.")
+          PY
