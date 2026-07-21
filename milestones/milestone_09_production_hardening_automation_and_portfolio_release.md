@@ -339,9 +339,9 @@ reviewed application screenshots included in `docs/portfolio/screenshots/`.
 - [x] Technical scale, architecture, testing, and reproducibility are visible.
 - [x] Individual technical contributions are clearly stated.
 - [x] Project summaries and contribution highlights are easy to locate.
-- [ ] All automated and manual release gates pass.
-- [ ] The final release commit is clean, synchronized, and documented.
-- [ ] Only then may a new `v1.0.0` tag and GitHub Release be considered.
+- [x] All automated and manual release gates pass.
+- [x] The final release commit is clean, synchronized, and documented.
+- [x] `v1.0.0` release eligibility is confirmed; publication remains optional.
 
 ## Completion rule
 
@@ -350,3 +350,15 @@ passed or explicitly documented as not applicable with a defensible reason.
 
 Creating a `v1.0.0` tag is a final release action, not evidence by itself that
 the milestone is complete.
+
+## Milestone completion
+
+Milestone 9 was completed on July 21, 2026.
+
+The final repository passed the full automated test suite, public deployment
+verification, continuous-integration workflow, documentation review, public
+wording audit, and manual application walkthrough. The `main` branch was clean
+and synchronized with `origin/main` at completion.
+
+Publishing a `v1.0.0` tag and GitHub Release is an optional release action and
+is not required for milestone completion.
