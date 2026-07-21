@@ -70,7 +70,9 @@ Major phases publish only after:
 
 ## Current Status
 
-**Milestones 1–7 are complete.**
+**Milestones 1–8 are complete. Milestone 9 is in progress.**
 
 - [Milestone 6 — Seasonal Development Rankings and Explorer](milestone_06_seasonal_rankings_and_exploratory_analytics.md)
 - [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestone_07_program_trends_and_specialized_rankings.md)
+- [Milestone 8 — Public Deployment and Recruiter Experience](milestone_08_public_deployment_and_recruiter_experience.md)
+- [Milestone 9 — Production Hardening, Automation, and Portfolio Release](milestone_09_production_hardening_automation_and_portfolio_release.md)
