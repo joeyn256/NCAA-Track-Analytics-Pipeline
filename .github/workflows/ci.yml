@@ -51,7 +51,9 @@ jobs:
         run: |
           python -m ruff check \
             src/apps/deployment_data.py \
+            scripts/verify_public_deployment.py \
             tests/test_deployment_data.py \
+            tests/test_verify_public_deployment.py \
             --output-format=concise
 
       - name: Run automated tests
