@@ -225,6 +225,31 @@ Findings:
 
 The visual review was completed against the live public Streamlit explorer.
 
+## Phase 9H — Portfolio and career package
+
+**Status: Written package complete; screenshot capture pending**
+
+Recruiter-facing materials now include:
+
+- a concise project case study;
+- Mermaid system, deployment, and analytical data-flow visuals;
+- a three-to-five-minute demo and recording guide;
+- technical and nontechnical project summaries;
+- defensible résumé bullets;
+- LinkedIn and portfolio descriptions;
+- graduate-school application language;
+- 30-second and two-minute interview explanations;
+- STAR-format examples covering identity resolution, event fairness, and
+  production deployment;
+- a safe screenshot capture guide with three required application views.
+
+All written claims preserve the frozen project metrics and explicitly avoid
+causal, traffic, adoption, revenue, or accuracy claims that the evidence does
+not support.
+
+The remaining Phase 9H task is to capture and review the three current public
+application screenshots listed in `docs/portfolio/SCREENSHOT_GUIDE.md`.
+
 ## Milestone 9 acceptance checklist
 
 ### Repository safety
@@ -286,23 +311,23 @@ The visual review was completed against the live public Streamlit explorer.
 
 ### Portfolio package
 
-- [ ] A concise case study is available.
-- [ ] Architecture and data-flow visuals are available.
+- [x] A concise case study is available.
+- [x] Architecture and data-flow visuals are available.
 - [ ] Selected application screenshots are current and safe to publish.
-- [ ] A short demo script and walkthrough-recording guide are available.
-- [ ] Technical and nontechnical summaries are accurate.
-- [ ] Engineering challenges, solutions, methodology, and limitations are
+- [x] A short demo script and walkthrough-recording guide are available.
+- [x] Technical and nontechnical summaries are accurate.
+- [x] Engineering challenges, solutions, methodology, and limitations are
       documented.
-- [ ] Public links are prominent and correct.
+- [x] Public links are prominent and correct.
 
 ### Career materials
 
-- [ ] Résumé bullets are accurate and defensible.
-- [ ] LinkedIn and portfolio descriptions are complete.
-- [ ] Graduate-school application language is complete.
-- [ ] Interview talking points include a 30-second and two-minute explanation.
-- [ ] STAR-format project examples are documented.
-- [ ] No claims exaggerate causality, accuracy, traffic, adoption, or business
+- [x] Résumé bullets are accurate and defensible.
+- [x] LinkedIn and portfolio descriptions are complete.
+- [x] Graduate-school application language is complete.
+- [x] Interview talking points include a 30-second and two-minute explanation.
+- [x] STAR-format project examples are documented.
+- [x] No claims exaggerate causality, accuracy, traffic, adoption, or business
       impact.
 
 ### Final recruiter test and release

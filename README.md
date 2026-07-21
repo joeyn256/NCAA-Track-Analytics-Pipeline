@@ -1,5 +1,21 @@
 # NCAA Track Analytics Pipeline
 
+
+<!-- PORTFOLIO_PACKAGE_START -->
+## Portfolio and recruiter resources
+
+- **[Open the live explorer](https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/)**
+- [Read the concise case study](docs/portfolio/CASE_STUDY.md)
+- [Review the architecture and data flow](docs/portfolio/ARCHITECTURE_AND_DATA_FLOW.md)
+- [Use the demo and recording guide](docs/portfolio/DEMO_AND_RECORDING_GUIDE.md)
+- [View résumé, LinkedIn, graduate-school, and interview language](docs/portfolio/CAREER_MATERIALS.md)
+- [Portfolio package index](docs/portfolio/README.md)
+
+The official model is **Enhanced Balanced Production**. Original Balanced
+Production v4.1 and Average Athlete Development remain companion views. The
+rankings are observational and do not establish causal coaching effects.
+<!-- PORTFOLIO_PACKAGE_END -->
+
 A production analytics system for measuring how NCAA Division I track and field
 programs develop athletes over time.
 
