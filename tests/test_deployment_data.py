@@ -113,16 +113,20 @@ def import_loader(
     return importlib.import_module(MODULE_NAME)
 
 
-def test_sha256_file(tmp_path: Path) -> None:
+def test_sha256_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database = build_fixture_database(tmp_path / "fixture.duckdb")
+    loader = import_loader(monkeypatch, database)
+
     file_path = tmp_path / "example.bin"
     content = b"ncaa-track-analytics"
     file_path.write_bytes(content)
 
     expected = hashlib.sha256(content).hexdigest()
 
-    from src.apps import deployment_data
-
-    assert deployment_data.sha256_file(file_path) == expected
+    assert loader.sha256_file(file_path) == expected
 
 
 def test_quote_identifier_escapes_double_quotes(
@@ -328,6 +332,25 @@ def test_mapping_counts_and_allowed_schemas(
             "deployment_meta",
         }
     )
+
+
+def test_configured_database_path_uses_default_database(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database = build_fixture_database(
+        tmp_path / "default-publication.duckdb"
+    )
+    loader = import_loader(monkeypatch, database)
+
+    monkeypatch.delenv("NCAA_TRACK_PUBLIC_DB", raising=False)
+    monkeypatch.setattr(
+        loader,
+        "DEFAULT_PUBLIC_DATABASE_PATH",
+        database,
+    )
+
+    assert loader._configured_database_path() == database
 
 
 def test_configured_database_path_uses_cache_directory(
