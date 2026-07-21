@@ -49,7 +49,7 @@ jobs:
 
       - name: Run targeted Ruff checks
         run: |
-          python -m ruff check \
+          python -m ruff check tests/test_explorer_app.py \
             src/apps/deployment_data.py \
             scripts/verify_public_deployment.py \
             tests/test_deployment_data.py \
