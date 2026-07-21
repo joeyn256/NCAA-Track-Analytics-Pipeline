@@ -177,6 +177,32 @@ The first Phase 9E CI validation, GitHub Actions run `29870082072`, completed
 successfully against commit
 `4e842d904781f9cb82810d817b30e7ada6cfac45`.
 
+## Phase 9F — Guarded release automation
+
+**Status: Complete**
+
+The repository now includes guarded, dry-run-first tooling for preparing
+future semantic-version releases without modifying the immutable
+`public-deployment-v1` release.
+
+The release preparation workflow:
+
+- validates semantic release versions and rejects reused versions;
+- blocks reuse of `public-deployment-v1`;
+- blocks `v1.0.0` until an explicit final-release gate is supplied;
+- calculates compressed and uncompressed artifact hashes and sizes;
+- validates all 81 published resource tables;
+- confirms 2,918,594 source and deployment rows;
+- requires source-to-deployment parity to pass;
+- starts the explorer against the exact decompressed artifact;
+- generates reproducible JSON metadata and Markdown release notes;
+- refuses to overwrite an existing package, tag, or GitHub release;
+- performs no publishing unless `--publish` is supplied explicitly.
+
+The `v0.9.0` dry run completed without creating a tag or GitHub Release.
+GitHub Actions run `29870894706` passed against commit
+`ec9fec366e2495cc22919f0884acf3e0de9e5d7e`.
+
 ## Milestone 9 acceptance checklist
 
 ### Repository safety
@@ -216,14 +242,14 @@ successfully against commit
 
 ### Release automation
 
-- [ ] Future release tooling uses a new semantic version and cannot overwrite
+- [x] Future release tooling uses a new semantic version and cannot overwrite
       an existing release.
-- [ ] Artifact hashes and sizes are calculated and recorded.
-- [ ] Source-to-deployment table and row parity are validated.
-- [ ] Release metadata and notes can be generated reproducibly.
-- [ ] The application can be verified against the exact release artifact.
-- [ ] The process prevents accidental secret or oversized-file commits.
-- [ ] No `v1.0.0` tag or release is created before all acceptance gates pass.
+- [x] Artifact hashes and sizes are calculated and recorded.
+- [x] Source-to-deployment table and row parity are validated.
+- [x] Release metadata and notes can be generated reproducibly.
+- [x] The application can be verified against the exact release artifact.
+- [x] The process prevents accidental secret or oversized-file commits.
+- [x] No `v1.0.0` tag or release is created before all acceptance gates pass.
 
 ### Performance, accessibility, and user experience
 
