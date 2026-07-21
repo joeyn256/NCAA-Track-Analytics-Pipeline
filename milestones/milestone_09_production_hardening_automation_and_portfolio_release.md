@@ -248,7 +248,7 @@ causal, traffic, adoption, revenue, or accuracy claims that the evidence does
 not support.
 
 The remaining Phase 9H task is to capture and review the three current public
-application screenshots listed in `docs/portfolio/SCREENSHOT_GUIDE.md`.
+reviewed application screenshots included in `docs/portfolio/screenshots/`.
 
 ## Milestone 9 acceptance checklist
 

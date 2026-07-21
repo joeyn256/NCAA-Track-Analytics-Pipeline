@@ -156,7 +156,7 @@ def selectbox(app: AppTest, label: str):
     return next(item for item in app.selectbox if item.label == label)
 
 
-def test_recruiter_homepage_and_default_rankings(
+def test_public_homepage_and_default_rankings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
