@@ -328,3 +328,317 @@ def test_mapping_counts_and_allowed_schemas(
             "deployment_meta",
         }
     )
+
+
+def test_configured_database_path_uses_cache_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database = build_fixture_database(tmp_path / "fixture.duckdb")
+    loader = import_loader(monkeypatch, database)
+
+    monkeypatch.delenv("NCAA_TRACK_PUBLIC_DB", raising=False)
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_CACHE_DIR",
+        str(tmp_path / "custom-cache"),
+    )
+    monkeypatch.setattr(
+        loader,
+        "DEFAULT_PUBLIC_DATABASE_PATH",
+        tmp_path / "not-present.duckdb",
+    )
+
+    assert loader._configured_database_path() == (
+        tmp_path
+        / "custom-cache"
+        / loader.DATABASE_FILENAME
+    )
+
+
+def test_download_database_accepts_direct_duckdb(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_database = build_fixture_database(
+        tmp_path / "source.duckdb"
+    )
+    source_bytes = source_database.read_bytes()
+    expected_database_sha256 = hashlib.sha256(
+        source_bytes
+    ).hexdigest()
+
+    destination = tmp_path / "cache" / "downloaded.duckdb"
+
+    loader = import_loader(monkeypatch, source_database)
+
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_URL",
+        "https://example.invalid/publication.duckdb",
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_SHA256",
+        expected_database_sha256,
+    )
+
+    class Response:
+        def __enter__(self):
+            from io import BytesIO
+
+            self.handle = BytesIO(source_bytes)
+            return self.handle
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.handle.close()
+            return False
+
+    monkeypatch.setattr(
+        loader,
+        "urlopen",
+        lambda url, timeout: Response(),
+    )
+
+    loader._download_database(destination)
+
+    assert destination.read_bytes() == source_bytes
+    assert loader.sha256_file(destination) == (
+        expected_database_sha256
+    )
+    assert not list(destination.parent.glob("*.download"))
+    assert not list(destination.parent.glob("*.download.duckdb"))
+
+
+def test_download_database_decompresses_gzip_by_extension(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import gzip
+    from io import BytesIO
+
+    source_database = build_fixture_database(
+        tmp_path / "source.duckdb"
+    )
+    source_bytes = source_database.read_bytes()
+
+    compressed = BytesIO()
+    with gzip.GzipFile(fileobj=compressed, mode="wb") as handle:
+        handle.write(source_bytes)
+
+    gzip_bytes = compressed.getvalue()
+    expected_database_sha256 = hashlib.sha256(
+        source_bytes
+    ).hexdigest()
+    expected_gzip_sha256 = hashlib.sha256(
+        gzip_bytes
+    ).hexdigest()
+
+    destination = tmp_path / "cache" / "downloaded.duckdb"
+
+    loader = import_loader(monkeypatch, source_database)
+
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_URL",
+        "https://example.invalid/publication.duckdb.gz",
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_SHA256",
+        expected_database_sha256,
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_GZIP_SHA256",
+        expected_gzip_sha256,
+    )
+
+    class Response:
+        def __enter__(self):
+            self.handle = BytesIO(gzip_bytes)
+            return self.handle
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.handle.close()
+            return False
+
+    monkeypatch.setattr(
+        loader,
+        "urlopen",
+        lambda url, timeout: Response(),
+    )
+
+    loader._download_database(destination)
+
+    assert destination.read_bytes() == source_bytes
+    assert not list(destination.parent.glob("*.download"))
+    assert not list(destination.parent.glob("*.download.duckdb"))
+
+
+def test_download_database_detects_gzip_magic_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import gzip
+    from io import BytesIO
+
+    source_database = build_fixture_database(
+        tmp_path / "source.duckdb"
+    )
+    source_bytes = source_database.read_bytes()
+
+    compressed = BytesIO()
+    with gzip.GzipFile(fileobj=compressed, mode="wb") as handle:
+        handle.write(source_bytes)
+
+    gzip_bytes = compressed.getvalue()
+    expected_database_sha256 = hashlib.sha256(
+        source_bytes
+    ).hexdigest()
+
+    destination = tmp_path / "cache" / "downloaded.duckdb"
+
+    loader = import_loader(monkeypatch, source_database)
+
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_URL",
+        "https://example.invalid/download?id=123",
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_SHA256",
+        expected_database_sha256,
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_GZIP_SHA256",
+        "",
+    )
+
+    class Response:
+        def __enter__(self):
+            self.handle = BytesIO(gzip_bytes)
+            return self.handle
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.handle.close()
+            return False
+
+    monkeypatch.setattr(
+        loader,
+        "urlopen",
+        lambda url, timeout: Response(),
+    )
+
+    loader._download_database(destination)
+
+    assert destination.read_bytes() == source_bytes
+
+
+def test_download_database_rejects_gzip_checksum_and_cleans_up(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import gzip
+    from io import BytesIO
+
+    source_database = build_fixture_database(
+        tmp_path / "source.duckdb"
+    )
+    source_bytes = source_database.read_bytes()
+
+    compressed = BytesIO()
+    with gzip.GzipFile(fileobj=compressed, mode="wb") as handle:
+        handle.write(source_bytes)
+
+    gzip_bytes = compressed.getvalue()
+    destination = tmp_path / "cache" / "downloaded.duckdb"
+
+    loader = import_loader(monkeypatch, source_database)
+
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_URL",
+        "https://example.invalid/publication.duckdb.gz",
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_SHA256",
+        hashlib.sha256(source_bytes).hexdigest(),
+    )
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_GZIP_SHA256",
+        "0" * 64,
+    )
+
+    class Response:
+        def __enter__(self):
+            self.handle = BytesIO(gzip_bytes)
+            return self.handle
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.handle.close()
+            return False
+
+    monkeypatch.setattr(
+        loader,
+        "urlopen",
+        lambda url, timeout: Response(),
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Downloaded gzip checksum mismatch",
+    ):
+        loader._download_database(destination)
+
+    assert not destination.exists()
+    assert destination.parent.is_dir()
+    assert not list(destination.parent.glob("*.download"))
+    assert not list(destination.parent.glob("*.download.duckdb"))
+
+
+def test_download_database_cleans_up_after_network_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_database = build_fixture_database(
+        tmp_path / "source.duckdb"
+    )
+    destination = tmp_path / "cache" / "downloaded.duckdb"
+
+    loader = import_loader(monkeypatch, source_database)
+
+    monkeypatch.setenv(
+        "NCAA_TRACK_PUBLIC_DB_URL",
+        "https://example.invalid/failure.duckdb",
+    )
+
+    def fail_download(url, timeout):
+        raise OSError("synthetic network failure")
+
+    monkeypatch.setattr(
+        loader,
+        "urlopen",
+        fail_download,
+    )
+
+    with pytest.raises(
+        OSError,
+        match="synthetic network failure",
+    ):
+        loader._download_database(destination)
+
+    assert not destination.exists()
+    assert destination.parent.is_dir()
+    assert not list(destination.parent.glob("*.download"))
+    assert not list(destination.parent.glob("*.download.duckdb"))
+
+
+def test_source_key_preserves_external_absolute_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database = build_fixture_database(tmp_path / "fixture.duckdb")
+    loader = import_loader(monkeypatch, database)
+
+    external_path = (
+        tmp_path
+        / "outside"
+        / "external_resource.csv"
+    ).resolve()
+
+    assert loader._source_key(external_path) == (
+        external_path.as_posix()
+    )
