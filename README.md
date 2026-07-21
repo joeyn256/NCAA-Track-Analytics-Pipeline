@@ -1,558 +1,313 @@
-# NCAA Division I Athlete Development Analytics
+# NCAA Track Analytics Pipeline
 
-A production-scale data engineering and statistical modeling project that ranks NCAA Division I track and field programs by how effectively athletes improve while at each school.
+A production analytics system for measuring how NCAA Division I track and field
+programs develop athletes over time.
 
-The system processes **6.59 million performances**, reconstructs transfer-aware school histories, estimates expected improvement without using the evaluated school’s data, and publishes uncertainty-adjusted development rankings for **361 programs**.
+The project collects and standardizes public collegiate performance data,
+builds a relational DuckDB warehouse, estimates athlete development relative to
+event-specific expectations, and publishes school rankings, longitudinal
+program trends, specialized analyses, and an interactive Streamlit explorer.
 
----
+## Current Production Model
 
-## Featured Results
+### Enhanced Balanced Production
 
-### Overall Athlete Development Rankings
+**Enhanced Balanced Production is the official ranking model.**
 
-| Rank | School | Athlete-school units | Posterior score |
-|---:|---|---:|---:|
-| 1 | Air Force | 374 | 1.2442 |
-| 2 | LSU | 304 | 1.1119 |
-| 3 | Kentucky | 248 | 0.9874 |
-| 4 | Ohio State | 337 | 0.8917 |
-| 5 | Arkansas | 305 | 0.8500 |
-| 6 | Minnesota | 421 | 0.8309 |
-| 7 | Wisconsin | 272 | 0.8175 |
-| 8 | Arizona | 299 | 0.7961 |
-| 9 | Florida | 252 | 0.7546 |
-| 10 | Indiana | 318 | 0.7453 |
+It is designed to answer a difficult question fairly:
 
-The primary ranking includes **353 officially ranked schools** and retains **8 additional schools as insufficient-data programs** rather than assigning unreliable ranks.
+> Which programs create the most athlete development value across different
+> events, genders, seasons, and athlete starting levels?
 
-### Additional Ranking Leaders
+A simple average improvement metric cannot answer that well. Ten seconds of
+improvement means something very different in a 5,000m race than in a sprint,
+and improvement near the elite frontier is harder than improvement from a
+developing baseline.
 
-| Analysis | Current leader |
-|---|---|
-| Development consistency | Air Force |
-| Elite/frontier development | Air Force |
-| Developing baseline tier | Northern Iowa |
-| Competitive baseline tier | LSU |
-| Advanced baseline tier | Arkansas |
-| Elite baseline tier | Air Force |
-| Breakout rate | Mercer |
-| Balanced program | LSU |
-| Development efficiency | UC San Diego |
-| Ranking robustness | Air Force |
-| Inbound transfer development | Florida |
+Enhanced Balanced Production addresses those problems through:
 
-The project also publishes rankings for **30 individual events**, men’s and women’s programs, indoor and outdoor event partitions, and 10 coaching-oriented event groups.
+- event-specific performance scales anchored to collegiate record references;
+- school-held-out expected-improvement estimates;
+- observed-minus-expected athlete development signals;
+- support-reliability adjustment with `k = 191`;
+- equal positive scoring budgets across eligible championship events;
+- capped negative event exposure;
+- separate event, gender, season, and cohort partitions;
+- explicit missing-season handling with no interpolation or fabricated data.
 
----
+### Production scoring contract
 
-## What This Project Demonstrates
-
-- Large-scale web collection and resilient parsing
-- Relational data modeling in DuckDB
-- Identity resolution across duplicate athlete profiles
-- Transfer-aware chronological school attribution
-- Event-specific normalization across times, distances, and heights
-- School-grouped cross-validation
-- Expected-improvement modeling
-- Multi-event-neutral athlete aggregation
-- Empirical-Bayes shrinkage
-- Confidence intervals and reliability thresholds
-- Sensitivity and outlier analysis
-- Reproducible, versioned analytical pipelines
-
----
-
-<!-- TECHNICAL_DOCUMENTATION_START -->
-## Technical Documentation
-
-The root README is the project overview. Detailed engineering,
-attribution, modeling, and validation evidence is organized in the
-[milestone documentation index](milestones/README.md).
-
-Recommended technical deep dives:
-
-- [Milestone 4 — Canonical Athlete Identity and D1 School Stints](milestones/milestone_04_canonical_identity_and_school_stints.md)
-- [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
-<!-- TECHNICAL_DOCUMENTATION_END -->
-
-## Core Methodology
-
-The central metric is:
-
-```text
-athlete value added
-= observed normalized improvement
-− school-held-out expected improvement
-```
-
-### 1. Normalize performances
-
-Each eligible mark is mapped to an event-, gender-, and season-specific performance level using approved collegiate record anchors:
-
-```text
-performance level
-= 100 × min(1, anchor ratio)²
-```
-
-The nonlinear scale gives greater value to equivalent raw improvements made closer to the human-performance frontier.
-
-### 2. Build stable athlete periods
-
-A single personal best is not treated as a complete season.
-
-Stable athlete-event-period levels are constructed from multiple meets, with documented minimum-meet thresholds and sparse-event exceptions.
-
-### 3. Measure observed development
-
-Development trajectories remain specific to:
-
-```text
-canonical athlete
-× school
-× gender
-× season type
-× event
-```
-
-This prevents one school from receiving credit for development that occurred before or after a transfer.
-
-### 4. Estimate expected improvement
-
-Expected improvement is learned from comparable trajectories using deterministic five-fold school-grouped cross-fitting.
-
-The evaluated school is excluded from the training fold used to generate its expectations.
-
-### 5. Aggregate athletes fairly
-
-Trajectories are first averaged within event families and then across families so that every athlete-school unit contributes one total school vote.
-
-A multi-event athlete does not count as several independent athletes.
-
-### 6. Stabilize school rankings
-
-School means are adjusted with empirical-Bayes shrinkage:
-
-```text
-posterior score
-= national mean
-+ shrinkage weight × (raw school score − national mean)
-```
-
-Small samples receive more shrinkage, while large samples remain closer to their raw values.
-
----
-
-## Model Performance and Reliability
-
-### Expected-improvement benchmark
-
-Selected model:
-
-```text
-resolution_raw_mean
-```
-
-| Metric | Out-of-sample result |
+| Component | Production setting |
 |---|---:|
-| MAE | 3.3919 |
-| RMSE | 4.5327 |
-| Calibration slope | 0.9704 |
-| Prediction correlation | 0.4517 |
-| R² | 0.2038 |
+| Official championship events | 27 |
+| Registered event groups | 7 |
+| Positive budget per eligible event partition | 100,000 points |
+| Negative cap per eligible event partition | 100,000 points |
+| Support-reliability constant | `k = 191` |
+| Official athlete-point rows | 392,682 |
+| Official school-event rows | 68,575 |
+| Official event partitions | 449 |
 
-The selected model improved MAE by approximately **9.7%** and RMSE by approximately **10.8%** relative to the naive held-out-fold benchmark.
+The result is a ranking framework that rewards both the quantity and difficulty
+of athlete development while preventing high-volume events from dominating the
+national leaderboard.
 
-### Ranking stability
+## What the System Publishes
 
-Seven approved ranking variants tested alternative variance priors, winsorization, median aggregation, and removal of each school’s best or worst athlete.
+### Official rankings
 
-| Stability measure | Result |
-|---|---:|
-| Minimum alternative rank correlation | 0.9979 |
-| Minimum top-10 overlap | 90% |
-| Minimum top-25 overlap | 92% |
-| Maximum median rank movement | 3 |
-| Failed sensitivity variants | 0 |
+The official ranking explorer supports:
 
-Air Force ranked first under every approved robustness variant.
+- combined program rankings;
+- men's and women's rankings;
+- indoor and outdoor rankings;
+- single-season and all-time views;
+- event-level rankings;
+- event-group rankings;
+- baseline and endpoint cohort filters;
+- school-level contribution detail.
 
----
+### Program trends
 
-## Project Scale
+The longitudinal layer measures how programs change across time using:
 
-| Layer | Final value |
-|---|---:|
-| Historical roster files | 34,334 |
-| Raw roster records | 992,774 |
-| Source athlete profiles | 193,961 |
-| Athlete pages collected | 193,954 |
-| Unique source performances | 6,594,540 |
-| Meets | 32,416 |
-| Raw event labels | 378 |
-| Canonical people | 192,561 |
-| Deduplicated canonical-person performances | 6,376,667 |
-| Final D1 school stints | 174,429 |
-| Eligible normalized performance rows | 4,664,041 |
-| Stable athlete-event periods | 1,628,956 |
-| Observed development trajectories | 189,839 |
-| Primary modeling trajectories | 189,703 |
-| Athlete-event-family units | 98,888 |
-| Athlete-school units | 80,077 |
-| Schools represented | 361 |
-| Officially ranked schools | 353 |
+- exact previous-calendar-year, same-season comparisons;
+- three- and five-calendar-year windows;
+- rising, falling, mixed, and insufficient-history classifications;
+- national percentile and rank movement;
+- conference-relative context;
+- indoor-versus-outdoor comparisons;
+- event and event-group trajectory profiles.
 
----
+Missing seasons remain missing. The system does not zero-fill, carry forward,
+interpolate, or substitute the nearest available season.
 
-## Ranking Products
+### Specialized Event-Balanced rankings
 
-### Primary publication
+The official specialized-ranking publication contains 12 registered analyses:
 
-- Overall program rankings
-- Men’s rankings
-- Women’s rankings
-- Reliability tiers
-- Posterior confidence intervals
-- Insufficient-data classifications
-- School score components
+1. Development consistency
+2. Elite/frontier development
+3. Developing baseline tier
+4. Competitive baseline tier
+5. Advanced baseline tier
+6. Elite baseline tier
+7. Breakout rate
+8. Balanced program
+9. Development efficiency
+10. Ranking robustness
+11. Inbound transfer development
+12. National elite finishers — Endpoint 90+
 
-### Individual-event rankings
+Eleven analyses currently publish a national leader. Inbound transfer
+development remains explicitly unavailable under the frozen Broad coverage
+contract rather than publishing an unsupported leaderboard.
 
-The project ranks schools separately for 30 canonical events, including:
+### Average Development companion model
 
-- 60m, 100m, 200m, and 400m
-- 500m, 600m, 800m, 1000m, 1500m, and mile
-- 3000m, 5000m, and 10000m
-- Hurdles and steeplechase
-- High jump, pole vault, long jump, and triple jump
-- Shot put, discus, hammer, weight throw, and javelin
-- Pentathlon, heptathlon, and decathlon
+Average Development remains available as a separate empirical-Bayes companion
+model for efficiency-oriented analysis.
 
-### Coaching-oriented groups
-
-- Sprints
-- Middle Distance
-- Distance
-- Hurdles
-- Steeplechase
-- Jumps
-- Throws
-- Combined Events
-- Field
-- Special Events
-
-### Supplemental analyses
-
-- Development consistency
-- Elite/frontier development
-- Four baseline-performance tiers
-- Breakout rate
-- Balanced program index
-- Annualized development efficiency
-- Ranking robustness
-- Inbound transfer development
-
----
-
-## Pipeline Architecture
+It is intentionally separated from Enhanced Balanced Production in the
+explorer:
 
 ```text
-NCAA Division I Directory
-            │
-            ▼
-     Historical Rosters
-            │
-            ▼
-       Athlete Profiles
-            │
-            ▼
-     Performance Parser
-            │
-            ▼
- Relational DuckDB Warehouse
-            │
-            ▼
- Canonical Athlete Identity
-            │
-            ▼
- Transfer-Aware School Stints
-            │
-            ▼
- Event and Mark Normalization
-            │
-            ▼
- Collegiate Record Anchors
-            │
-            ▼
- Stable Athlete-Event Periods
-            │
-            ▼
- Observed Development Trajectories
-            │
-            ▼
- School-Held-Out Expected Improvement
-            │
-            ▼
- Athlete Value Added
-            │
-            ▼
- Multi-Event-Neutral Aggregation
-            │
-            ▼
- Empirical-Bayes School Rankings
-            │
-            ▼
- Event, Group, and Supplemental Rankings
+Rankings
+├── Official Rankings
+└── Specialized Rankings
+
+Average Development
+├── Rankings
+├── School Profile
+└── Supplemental Rankings
 ```
 
-Every major phase:
+Average Development is useful for answering different questions, but it is not
+the official production ranking.
 
-- attaches upstream databases read-only;
-- writes to a versioned output directory;
-- records input and output manifests;
-- calculates SHA-256 hashes;
-- executes hard validation checks;
-- publishes only after its phase gate passes.
+## Interactive Explorer
 
----
-
-## Repository Structure
-
-```text
-NCAA Track Analytics Pipeline/
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   ├── database/
-│   └── reference/
-│       └── collegiate_records/
-├── milestones/
-│   ├── README.md
-│   ├── milestone_01_data_collection.md
-│   ├── milestone_02_performance_parsing.md
-│   ├── milestone_03_database_construction.md
-│   ├── milestone_03_database_audit.md
-│   ├── milestone_04_canonical_identity_and_school_stints.md
-│   └── milestone_05_athlete_development_rankings.md
-├── src/
-│   ├── analysis/
-│   │   ├── milestone4/
-│   │   └── milestone5/
-│   ├── database/
-│   ├── parser/
-│   ├── processing/
-│   └── scraper/
-├── tests/
-├── README.md
-├── requirements.txt
-└── requirements-milestone3.txt
-```
-
----
-
-## Analytical Databases
-
-Generated databases remain local and are excluded from Git.
-
-### Source warehouse
-
-```text
-data/database/ncaa_track_analytics.duckdb
-```
-
-### Primary ranking publication
-
-```text
-data/processed/milestone5/athlete_development_v1/
-phase_5i_publication_freeze/
-ncaa_d1_athlete_development_rankings_v1.duckdb
-```
-
-### Event and group rankings
-
-```text
-data/processed/milestone5/athlete_development_v1/
-phase_5j_event_and_group_rankings/
-ncaa_d1_event_development_rankings_v1.duckdb
-```
-
-### Supplemental rankings
-
-```text
-data/processed/milestone5/athlete_development_v1/
-phase_5k_supplemental_development_rankings/
-supplemental_development_rankings_v1.duckdb
-```
-
----
-
-## Reproduction
-
-Activate the environment:
-
-```bash
-source .venv/bin/activate
-```
-
-Build and validate the source database:
-
-```bash
-python src/database/build_database.py --preflight-only
-
-set -o pipefail
-
-python src/database/build_database.py \
-    --build \
-    2>&1 | tee data/database/milestone3_build.log
-
-python src/database/validate_production_database.py \
-    | tee data/database/milestone3_production_validation.txt
-```
-
-Milestone-specific scripts are stored in:
-
-```text
-src/analysis/milestone4/
-src/analysis/milestone5/
-```
-
-For the complete ordered methodology and phase results, see:
-
-- [`milestones/milestone_04_canonical_identity_and_school_stints.md`](milestones/milestone_04_canonical_identity_and_school_stints.md)
-- [`milestones/milestone_05_athlete_development_rankings.md`](milestones/milestone_05_athlete_development_rankings.md)
-
----
-
-## Technology Stack
-
-- Python 3.12
-- DuckDB
-- SQL
-- Pandas
-- NumPy
-- BeautifulSoup
-- Requests
-- CSV and HTML
-- Git and GitHub
-
----
-
-## Interpretation and Limitations
-
-The rankings estimate school-associated athlete development. They are not randomized causal estimates of coaching quality.
-
-Important limitations:
-
-- results depend on available TFRRS performance coverage;
-- sparse event contexts may use broader expected-model fallbacks;
-- adjacent ranks may not be statistically distinguishable;
-- transfer status is inferred from observed school chronology;
-- some small event partitions collapse to ties after shrinkage;
-- relays require lineup-aware team modeling;
-- cross country requires course- and condition-aware modeling.
-
-Relays and cross country are planned extensions rather than unfinished Milestone 5 work.
-
----
-
-## Milestones
-
-- ✅ [Milestone 1 — Historical NCAA Data Collection](milestones/milestone_01_data_collection.md)
-- ✅ [Milestone 2 — Athlete Performance Parsing](milestones/milestone_02_performance_parsing.md)
-- ✅ [Milestone 3 — Relational Database Construction](milestones/milestone_03_database_construction.md)
-- ✅ [Milestone 3 — Production Database Audit](milestones/milestone_03_database_audit.md)
-- ✅ [Milestone 4 — Canonical Athlete Identity and D1 School Stints](milestones/milestone_04_canonical_identity_and_school_stints.md)
-- ✅ [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
-- ✅ [Milestone 6 — Seasonal Development Rankings and Explorer](milestones/milestone_06_seasonal_rankings_and_exploratory_analytics.md)
-- ✅ [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
-
----
-
-## Current Status
-
-
-<!-- MILESTONE_7_CURRENT_STATUS_START -->
-Milestones **1–7 are complete**. The current production explorer combines the
-official Enhanced Balanced Production rankings, longitudinal program trends,
-program comparisons, Event-Balanced specialized rankings, and the separate
-Average Development companion model.
-<!-- MILESTONE_7_CURRENT_STATUS_END -->
-
-<!-- MILESTONE_6_SUMMARY_START -->
-## Milestone 6 — Seasonal Development Rankings and Explorer
-
-**Status: Complete**
-
-Milestone 6 extends the frozen Milestone 5 athlete-development model into
-seasonal rankings, equal-event development-production rankings, elite cohorts,
-model diagnostics, and a Streamlit explorer.
-
-### Final model hierarchy
-
-- **Official primary:** Enhanced Balanced Production
-- **Balanced companion:** Original Balanced Production v4.1
-- **Efficiency companion:** Average Athlete Development
-
-The official model uses the original observed-minus-expected athlete signal,
-support reliability with `k=191`, a `100,000` positive budget for every
-publishable championship event, and a `100,000` negative event cap.
-
-```text
-Official athlete-point rows: 392,682
-Official school-event rows: 68,575
-Official event partitions: 449
-Official single-season combined rows: 13,882
-```
-
-Validation against Original v4.1 produced a `0.980708` rank correlation,
-`91.7%` top-10 overlap, and `94.0%` top-25 overlap.
-
-Matched elite testing showed greater credit for comparable high-baseline
-improvement in `97.9%` of matched cells. No additional elite multiplier is
-used.
-
-Run the explorer:
+Run the Streamlit application from the repository root:
 
 ```bash
 source .venv/bin/activate
 streamlit run src/apps/seasonal_development_explorer.py
 ```
 
-Final publication:
+The explorer includes:
+
+- **Rankings** — official and specialized Event-Balanced leaderboards;
+- **Trends** — longitudinal school development trajectories;
+- **Compare** — school-to-school and conference comparisons;
+- **Average Development** — separate posterior rankings and profiles;
+- **Diagnostics** — model-support and concentration checks;
+- **Coverage** — publication availability and missing-season context;
+- **Methodology** — definitions, model hierarchy, and interpretation guidance.
+
+## Validation
+
+The production system is built around hard publication gates rather than
+informal spot checks.
+
+### Enhanced model validation
+
+| Validation result | Value |
+|---|---:|
+| Rank correlation with Original Balanced Production v4.1 | 0.980708 |
+| Top-10 overlap | 91.7% |
+| Top-25 overlap | 94.0% |
+| Matched elite cells favoring high-baseline improvement | 97.9% |
+
+### Milestone 7 publication gates
+
+| Publication | Result |
+|---|---:|
+| Final trend-publication hard checks | 26 passed |
+| Specialized-ranking hard checks | 22 passed |
+| Registered trend-publication tables | 50 |
+| Curated explorer tables | 14 |
+| Registered specialized analyses | 12 |
+| Failed production checks | 0 |
+
+Additional safeguards include:
+
+- read-only attachment of frozen upstream databases;
+- before-and-after source hashes;
+- unique publication-key checks;
+- row-count and grain reconciliation;
+- explicit support thresholds;
+- no fabricated 2020 Outdoor production season;
+- documented transfer-inference status;
+- versioned outputs and reports.
+
+## Architecture
 
 ```text
-data/processed/milestone6/final_development_rankings_v1/
-└── phase_6g_final_publication/
-    └── final_development_rankings_v1.duckdb
+Public collegiate results
+        │
+        ▼
+Collection and HTML archive
+        │
+        ▼
+Performance parsing and normalization
+        │
+        ▼
+DuckDB relational warehouse
+        │
+        ▼
+Canonical athlete identity and school stints
+        │
+        ▼
+Expected-improvement model
+        │
+        ▼
+Enhanced Balanced Production
+        │
+        ├── Official rankings
+        ├── Event and group rankings
+        ├── Program trends
+        ├── Program comparisons
+        ├── Specialized rankings
+        └── Streamlit explorer
 ```
 
-See the Milestone 6 document in `milestones/` for full methodology,
-validation, outputs, and interpretation limits.
-<!-- MILESTONE_6_SUMMARY_END -->
+## Repository Structure
 
-<!-- MILESTONE_7_SUMMARY_START -->
-## Milestone 7 — Program Trends, Comparisons, and Specialized Rankings
+```text
+src/
+├── analysis/
+│   ├── milestone5/        # athlete development model
+│   ├── milestone6/        # production ranking publication
+│   └── milestone7/        # trends, comparisons, specialized rankings
+├── apps/
+│   └── seasonal_development_explorer.py
+├── database/              # DuckDB construction and validation
+├── parser/                # performance parsing
+└── scraper/               # public-data collection
 
-Milestone 7 extends the frozen Milestone 6 publication into a longitudinal
-program-analysis system.
+milestones/
+├── milestone_01_data_collection.md
+├── milestone_02_performance_parsing.md
+├── milestone_03_database_construction.md
+├── milestone_03_database_audit.md
+├── milestone_04_canonical_identity_and_school_stints.md
+├── milestone_05_athlete_development_rankings.md
+├── milestone_06_seasonal_rankings_and_exploratory_analytics.md
+└── milestone_07_program_trends_and_specialized_rankings.md
+```
 
-Key additions include:
+Generated raw data, processed publications, and DuckDB databases are excluded
+from Git because of their size. The repository contains the reproducible code,
+methodology, validation contracts, and explorer application.
 
-- exact previous-year, same-season comparisons;
-- three- and five-calendar-year trajectory windows;
-- national, conference, indoor/outdoor, event, and event-group context;
-- a final 50-table trend publication with 14 curated explorer tables;
-- 12 registered Enhanced Balanced Production specialized analyses;
-- 11 publishable specialized leaders and one explicit unavailable
-  inbound-transfer status;
-- Endpoint 90+ specialized rankings;
-- a unified Streamlit explorer with separate official and Average Development
-  model families.
+## Data Foundation
 
-All Phase 7D and Phase 7E production gates passed, including 26 final trend
-publication checks and 22 specialized-ranking checks.
+The current analytical warehouse is built from millions of collegiate
+performance records and historical roster observations collected from public
+TFRRS pages.
 
-See
-[`milestones/milestone_07_program_trends_and_specialized_rankings.md`](milestones/milestone_07_program_trends_and_specialized_rankings.md)
-for the complete methodology, validation contract, published products, and
-interpretation limits.
-<!-- MILESTONE_7_SUMMARY_END -->
+The source pipeline resolves:
+
+- athletes across seasons and school changes;
+- school and team identities;
+- event names and event groups;
+- indoor and outdoor seasons;
+- athlete-school affiliation periods;
+- performance-backed school attribution.
+
+Historical collection totals and detailed ingestion audits are preserved in the
+milestone documentation rather than emphasized in this project overview.
+
+## Methodology Principles
+
+1. **Reward difficult improvement.** Development near the elite frontier
+   receives appropriate credit.
+2. **Compare like with like.** Events, genders, seasons, and cohorts are scored
+   within valid partitions.
+3. **Balance events.** Each eligible championship event receives the same
+   positive scoring opportunity.
+4. **Adjust for support.** Small samples are not treated as equally reliable as
+   deep program histories.
+5. **Avoid school leakage.** Expected improvement is estimated without using
+   the target school's own outcomes.
+6. **Preserve missingness.** Missing seasons are not invented.
+7. **Separate analytical questions.** Official production, robustness, and
+   Average Development products are clearly labeled.
+8. **Publish only after validation.** Every major phase must pass a versioned
+   hard-check contract.
+
+## Interpretation
+
+The rankings are observational measures of athlete development production.
+They are not causal estimates of coaching quality.
+
+Results can also reflect:
+
+- roster composition;
+- scholarship and recruiting strategy;
+- event coverage;
+- athlete retention;
+- transfer patterns;
+- program depth;
+- data availability.
+
+The best use of the system is to compare programs across multiple views rather
+than treating a single ranking as a complete explanation.
+
+## Documentation
+
+Detailed methodology and audit evidence are available in the milestone files:
+
+- [Milestone 4 — Canonical Athlete Identity and D1 School Stints](milestones/milestone_04_canonical_identity_and_school_stints.md)
+- [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
+- [Milestone 6 — Seasonal Rankings and Explorer](milestones/milestone_06_seasonal_rankings_and_exploratory_analytics.md)
+- [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
+
+## Project Status
+
+**Milestones 1–7 are complete.**
+
+The current production system includes the official Enhanced Balanced
+Production rankings, longitudinal program trends, school and conference
+comparisons, Event-Balanced specialized rankings, the separate Average
+Development companion model, and the unified Streamlit explorer.
