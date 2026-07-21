@@ -58,7 +58,7 @@ Milestone 9 preserves all established methodology and interpretation rules:
 
 ## Phase 9A — Repository and production baseline
 
-**Status: In progress**
+**Status: Complete**
 
 The initial read-only audit confirmed:
 
@@ -94,6 +94,46 @@ The initial read-only audit confirmed:
    reused to recreate `public-deployment-v1`.
 10. Some repository documentation and helper files contain stale references.
 
+## Phase 9B — Deterministic tests and continuous integration
+
+**Status: Complete**
+
+Completed work includes:
+
+- reproducible pytest, Ruff, and Coverage development dependencies;
+- deterministic compact-publication loader tests independent of ignored local data;
+- checksum, download, decompression, cleanup, cache, and failure-path coverage;
+- 100% statement and branch coverage for `src/apps/deployment_data.py`;
+- Python 3.12 GitHub Actions CI for pushes and pull requests;
+- tracked-Python compilation, automated tests, targeted Ruff checks, dependency checks,
+  tracked-file size checks, and forbidden-artifact checks;
+- successful CI validation using Node.js 24-compatible GitHub Actions.
+
+The current deterministic baseline is 30 passing tests.
+
+## Phase 9C — Public deployment verification and monitoring
+
+**Status: Complete**
+
+The repository now includes `scripts/verify_public_deployment.py`, which validates:
+
+- the final application hostname after redirects;
+- the public Streamlit application shell;
+- blocking, authentication, sleep, and visible error markers;
+- a same-host Streamlit JavaScript asset;
+- asset response status and minimum content size;
+- direct-server or Community Cloud health diagnostics;
+- human-readable and JSON output;
+- nonzero failure exit behavior.
+
+Eight deterministic tests cover the verifier’s primary success and failure paths.
+The live deployment passed verification on July 21, 2026.
+
+The separate public deployment health workflow runs daily at 13:17 UTC and
+supports manual execution. Its first manual production run, GitHub Actions run
+`29868630162`, completed successfully against commit
+`c6f8bafbe280e5d7583da2ba119f5051083f89bb`.
+
 ## Milestone 9 acceptance checklist
 
 ### Repository safety
@@ -109,15 +149,15 @@ The initial read-only audit confirmed:
 
 ### Automated testing and CI
 
-- [ ] A focused GitHub Actions workflow runs without private datasets or local
+- [x] A focused GitHub Actions workflow runs without private datasets or local
       production databases.
-- [ ] CI uses Python 3.12.
-- [ ] All tracked production Python files pass syntax compilation.
-- [ ] Deterministic unit tests cover the compact-publication loader.
+- [x] CI uses Python 3.12.
+- [x] All tracked production Python files pass syntax compilation.
+- [x] Deterministic unit tests cover the compact-publication loader.
 - [ ] Streamlit smoke tests use safe fixtures or controlled mocks.
 - [ ] Deployment-descriptor and documentation consistency checks pass.
-- [ ] Secret-pattern and oversized-file checks pass.
-- [ ] The CI workflow is fast enough for normal pull requests and pushes.
+- [x] Secret-pattern and oversized-file checks pass.
+- [x] The CI workflow is fast enough for normal pull requests and pushes.
 
 ### Explorer regression coverage
 
@@ -128,7 +168,7 @@ The initial read-only audit confirmed:
 - [ ] Endpoint 90+ and Endpoint 95+ wording remains correct.
 - [ ] Missing 2020 Outdoor handling remains explicit.
 - [ ] Unavailable inbound-transfer handling remains explicit.
-- [ ] Loader cache, checksum, download, and failure behavior are tested.
+- [x] Loader cache, checksum, download, and failure behavior are tested.
 - [ ] Runtime has no dependency on ignored Milestone 5 or Milestone 6 CSV files.
 
 ### Release automation

@@ -96,6 +96,32 @@ The public URL is acceptable only when all of the following pass:
 
 Record the final URL and smoke-test result in the Milestone 8 document.
 
+## Automated health verification
+
+Run the public deployment verifier from the repository root:
+
+```bash
+python scripts/verify_public_deployment.py
+```
+
+Machine-readable output is available with `--json`.
+
+The `.github/workflows/deployment-health.yml` workflow:
+
+- runs daily at 13:17 UTC;
+- supports manual execution from GitHub Actions;
+- uses Python 3.12 and read-only repository permissions;
+- requires no private datasets or repository secrets;
+- runs the same verifier used locally.
+
+Streamlit Community Cloud may return its application shell from
+`/_stcore/health` instead of plain text. The verifier records this as
+`community-cloud-shell` and validates the application shell and JavaScript
+asset directly.
+
+The external health workflow is separate from normal CI, so a temporary
+hosting outage does not block pull requests.
+
 ## Failure handling
 
 If release publication fails, do not bypass the checksum, branch, clean-tree, or

@@ -16,9 +16,10 @@ program trends, specialized analyses, and an interactive Streamlit explorer.
 > Compare official program rankings, inspect athlete contributions, study
 > multi-season trends, and explore event-specific development results.
 
-**Deployment status:** Milestone 8 is complete. The compact public DuckDB is
-deployed through Streamlit Community Cloud and loads from the
-checksum-verified GitHub Release asset.
+**Deployment status:** Milestones 1–8 are complete and Milestone 9 production
+hardening is in progress. The compact public DuckDB is deployed through
+Streamlit Community Cloud, loads from the checksum-verified GitHub Release
+asset, and is protected by Python 3.12 CI plus a daily public health check.
 
 ### Project scale
 
@@ -204,6 +205,28 @@ At startup, the deployment loader can:
 4. decompress through an atomic temporary-file workflow;
 5. open DuckDB in read-only mode;
 6. reuse the cached publication on later runs.
+
+### Automated production verification
+
+The repository includes deterministic loader and deployment-verifier tests,
+a Python 3.12 GitHub Actions CI workflow, and a separate scheduled public
+deployment health workflow.
+
+Run the production verifier locally from the repository root:
+
+```bash
+python scripts/verify_public_deployment.py
+```
+
+Machine-readable output is also available:
+
+```bash
+python scripts/verify_public_deployment.py --json
+```
+
+The scheduled workflow runs daily and can also be triggered manually from
+GitHub Actions. It is separate from normal CI so a temporary Streamlit outage
+does not block pull requests.
 
 Large point views are loaded lazily. The application checks view availability
 using compact time metadata and queries only the selected model and cohort
@@ -416,15 +439,20 @@ Detailed methodology and audit evidence are available in the milestone files:
 - [Milestone 6 — Seasonal Rankings and Explorer](milestones/milestone_06_seasonal_rankings_and_exploratory_analytics.md)
 - [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
 - [Milestone 8 — Public Deployment and Recruiter Experience](milestones/milestone_08_public_deployment_and_recruiter_experience.md)
+- [Milestone 9 — Production Hardening, Automation, and Portfolio Release](milestones/milestone_09_production_hardening_automation_and_portfolio_release.md)
 - [Streamlit Community Cloud deployment guide](deployment/STREAMLIT_COMMUNITY_CLOUD.md)
 
 ## Project Status
 
-**Milestones 1–8 are complete.**
+**Milestones 1–8 are complete. Milestone 9 is in progress.**
 
 The production system includes the official Enhanced Balanced Production
 rankings, seasonal program trends and comparisons, specialized analyses, the
 preserved Average Development companion model, an immutable public data
 release, and a live Streamlit explorer.
+
+Milestone 9 has added deterministic deployment-loader tests, Python 3.12
+continuous integration, a reusable public deployment verifier, and scheduled
+production health monitoring.
 
 **Public application:** https://ncaa-d1-track-analytics-pipeline-explorer.streamlit.app/
