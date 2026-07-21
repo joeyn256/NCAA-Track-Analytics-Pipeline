@@ -8,6 +8,25 @@ builds a relational DuckDB warehouse, estimates athlete development relative to
 event-specific expectations, and publishes school rankings, longitudinal
 program trends, specialized analyses, and an interactive Streamlit explorer.
 
+## Public Explorer
+
+**Deployment status:** the Milestone 8 release candidate has passed every
+pre-release gate. The compact data artifact and application are ready for the
+controlled GitHub Release and Streamlit Community Cloud deployment sequence.
+
+The validated public URL will be added here after the release asset is
+published and the deployed application passes its production smoke test.
+
+The recruiter-facing explorer highlights:
+
+- 6,594,540 standardized performance records;
+- 193,961 athletes;
+- 554 institutions;
+- official Enhanced Balanced Production rankings;
+- longitudinal program trends and comparisons;
+- specialized Event-Balanced analyses;
+- the clearly separated Average Development companion model.
+
 ## Current Production Model
 
 ### Enhanced Balanced Production
@@ -144,6 +163,33 @@ The explorer includes:
 - **Coverage** — publication availability and missing-season context;
 - **Methodology** — definitions, model hierarchy, and interpretation guidance.
 
+### Public deployment architecture
+
+The public application uses one compact, read-only DuckDB publication instead
+of loading the larger collection of local CSVs and source databases directly.
+
+| Deployment component | Validated value |
+|---|---:|
+| Resource tables | 81 |
+| Metadata tables | 5 |
+| Validated resource rows | 2,918,594 |
+| DuckDB size | 352,858,112 bytes |
+| Compressed release asset | 236,994,168 bytes |
+| Publication version | `public_deployment_v1` |
+
+At startup, the deployment loader can:
+
+1. use a configured local database;
+2. download the versioned GitHub Release asset when the database is absent;
+3. verify the compressed and uncompressed SHA-256 checksums;
+4. decompress through an atomic temporary-file workflow;
+5. open DuckDB in read-only mode;
+6. reuse the cached publication on later runs.
+
+Large point views are loaded lazily. The application checks view availability
+using compact time metadata and queries only the selected model and cohort
+before applying the existing time filter.
+
 ## Validation
 
 The production system is built around hard publication gates rather than
@@ -169,15 +215,37 @@ informal spot checks.
 | Registered specialized analyses | 12 |
 | Failed production checks | 0 |
 
+### Milestone 8 deployment gates
+
+The final pre-release audit completed on July 21, 2026.
+
+| Deployment validation | Result |
+|---|---:|
+| Exact source-to-deployment parity | 81 of 81 tables |
+| Source and deployment resource rows | 2,918,594 each |
+| Full release-readiness validators | 7 of 7 passed |
+| Recruiter-readiness score | 100 of 100 |
+| Default-page median memory | 0.289 GiB |
+| Default-page maximum memory | 0.290 GiB |
+| Athlete Contributions maximum memory | 1.684 GiB |
+| Individual Event maximum memory | 0.393 GiB |
+| Cold AppTest startup | 1.368 seconds |
+| Warm AppTest rerun | 0.097 seconds |
+| Failed hard checks | 0 |
+
 Additional safeguards include:
 
 - read-only attachment of frozen upstream databases;
 - before-and-after source hashes;
 - unique publication-key checks;
-- row-count and grain reconciliation;
+- duplicate-preserving, bidirectional row reconciliation;
+- fresh-environment artifact bootstrap validation;
+- atomic download and decompression;
 - explicit support thresholds;
 - no fabricated 2020 Outdoor production season;
 - documented transfer-inference status;
+- no committed deployment secrets;
+- no oversized tracked data artifacts;
 - versioned outputs and reports.
 
 ## Architecture
@@ -207,23 +275,39 @@ Enhanced Balanced Production
         ├── Event and group rankings
         ├── Program trends
         ├── Program comparisons
-        ├── Specialized rankings
-        └── Streamlit explorer
+        └── Specialized rankings
+        │
+        ▼
+Compact public DuckDB publication
+        │
+        ▼
+Versioned GitHub Release asset
+        │
+        ▼
+Streamlit Community Cloud explorer
 ```
 
 ## Repository Structure
 
 ```text
+deployment/
+├── github/               # guarded release publishing script and notes
+├── streamlit/            # Community Cloud secrets example
+├── STREAMLIT_COMMUNITY_CLOUD.md
+└── public_deployment_v1.json
+
 src/
 ├── analysis/
-│   ├── milestone5/        # athlete development model
-│   ├── milestone6/        # production ranking publication
-│   └── milestone7/        # trends, comparisons, specialized rankings
+│   ├── milestone5/       # athlete development model
+│   ├── milestone6/       # production ranking publication
+│   ├── milestone7/       # trends, comparisons, specialized rankings
+│   └── milestone8/       # deployment publication and release validation
 ├── apps/
+│   ├── deployment_data.py
 │   └── seasonal_development_explorer.py
-├── database/              # DuckDB construction and validation
-├── parser/                # performance parsing
-└── scraper/               # public-data collection
+├── database/             # DuckDB construction and validation
+├── parser/               # performance parsing
+└── scraper/              # public-data collection
 
 milestones/
 ├── milestone_01_data_collection.md
@@ -233,18 +317,28 @@ milestones/
 ├── milestone_04_canonical_identity_and_school_stints.md
 ├── milestone_05_athlete_development_rankings.md
 ├── milestone_06_seasonal_rankings_and_exploratory_analytics.md
-└── milestone_07_program_trends_and_specialized_rankings.md
+├── milestone_07_program_trends_and_specialized_rankings.md
+└── milestone_08_public_deployment_and_recruiter_experience.md
 ```
 
-Generated raw data, processed publications, and DuckDB databases are excluded
-from Git because of their size. The repository contains the reproducible code,
-methodology, validation contracts, and explorer application.
+Generated raw data, processed publications, caches, and DuckDB databases are
+excluded from Git because of their size. The repository contains the
+reproducible code, methodology, validation contracts, deployment configuration,
+and explorer application.
 
 ## Data Foundation
 
-The current analytical warehouse is built from millions of collegiate
-performance records and historical roster observations collected from public
-TFRRS pages.
+The analytical warehouse is built from public TFRRS pages and currently
+contains:
+
+| Data foundation measure | Count |
+|---|---:|
+| Standardized performance records | 6,594,540 |
+| Unique athletes | 193,961 |
+| Institutions | 554 |
+| Teams | 973 |
+| Meets | 32,416 |
+| Seasons | 71 |
 
 The source pipeline resolves:
 
@@ -255,8 +349,8 @@ The source pipeline resolves:
 - athlete-school affiliation periods;
 - performance-backed school attribution.
 
-Historical collection totals and detailed ingestion audits are preserved in the
-milestone documentation rather than emphasized in this project overview.
+Detailed ingestion and database-construction audits are preserved in the
+milestone documentation.
 
 ## Methodology Principles
 
@@ -302,12 +396,14 @@ Detailed methodology and audit evidence are available in the milestone files:
 - [Milestone 5 — Athlete Development Rankings](milestones/milestone_05_athlete_development_rankings.md)
 - [Milestone 6 — Seasonal Rankings and Explorer](milestones/milestone_06_seasonal_rankings_and_exploratory_analytics.md)
 - [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
+- [Milestone 8 — Public Deployment and Recruiter Experience](milestones/milestone_08_public_deployment_and_recruiter_experience.md)
+- [Streamlit Community Cloud deployment guide](deployment/STREAMLIT_COMMUNITY_CLOUD.md)
 
 ## Project Status
 
 **Milestones 1–7 are complete.**
 
-The current production system includes the official Enhanced Balanced
-Production rankings, longitudinal program trends, school and conference
-comparisons, Event-Balanced specialized rankings, the separate Average
-Development companion model, and the unified Streamlit explorer.
+The Milestone 8 implementation and full pre-release validation are complete.
+The release candidate is awaiting the controlled commit, merge, GitHub Release,
+Streamlit Community Cloud deployment, public smoke test, and final insertion of
+the validated live URL.

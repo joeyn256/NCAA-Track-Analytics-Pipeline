@@ -1,0 +1,28 @@
+{
+  "artifact": {
+    "database_sha256": "7ab85809ab11b24ba98b0d5878f41242cfad53e1a1cbd4008dde36ec0f046de4",
+    "database_size_bytes": 352858112,
+    "filename": "ncaa_track_public_explorer_v1.duckdb.gz",
+    "path": "data/processed/milestone8/public_deployment_v1/phase_8b_compact_publication/ncaa_track_public_explorer_v1.duckdb.gz",
+    "sha256": "2a4aa9fd321dce96313d24cf532fbb8200d22847f6b6257138e0b49eed86432c",
+    "size_bytes": 236994168
+  },
+  "github": {
+    "origin": "https://github.com/joeyn256/NCAA-Track-Analytics-Pipeline",
+    "owner": "joeyn256",
+    "release_asset_url": "https://github.com/joeyn256/NCAA-Track-Analytics-Pipeline/releases/download/public-deployment-v1/ncaa_track_public_explorer_v1.duckdb.gz",
+    "release_name": "NCAA Track Explorer \u2014 Public Deployment v1",
+    "release_page": "https://github.com/joeyn256/NCAA-Track-Analytics-Pipeline/releases/tag/public-deployment-v1",
+    "release_tag": "public-deployment-v1",
+    "repository": "NCAA-Track-Analytics-Pipeline",
+    "slug": "joeyn256/NCAA-Track-Analytics-Pipeline"
+  },
+  "publication_version": "public_deployment_v1",
+  "streamlit": {
+    "config_path": ".streamlit/config.toml",
+    "entrypoint": "src/apps/seasonal_development_explorer.py",
+    "python_version": "3.12",
+    "secrets_example_path": "deployment/streamlit/secrets.toml.example",
+    "suggested_subdomain": "ncaa-track-development-explorer"
+  }
+}
