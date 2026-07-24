@@ -233,7 +233,6 @@ Public project documentation now includes:
 
 - a concise project case study;
 - Mermaid system, deployment, and analytical data-flow visuals;
-- a three-to-five-minute demo and recording guide;
 - technical and nontechnical project summaries;
 - concise contribution highlights;
 - short and detailed project descriptions;
