@@ -8,7 +8,6 @@
 - [Review the architecture and data flow](docs/portfolio/ARCHITECTURE_AND_DATA_FLOW.md)
 - [View project summaries and engineering notes](docs/portfolio/PROJECT_SUMMARIES.md)
 - [See the application images](docs/portfolio/README.md)
-- [Use the demo and recording guide](docs/portfolio/DEMO_AND_RECORDING_GUIDE.md)
 
 The official model is **Enhanced Balanced Production**. Original Balanced
 Production v4.1 and Average Athlete Development remain companion views. The

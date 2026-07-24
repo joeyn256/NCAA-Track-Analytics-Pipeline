@@ -8,7 +8,6 @@ implementation notes, application images, and presentation materials.
 - [Case study](CASE_STUDY.md)
 - [Architecture and data flow](ARCHITECTURE_AND_DATA_FLOW.md)
 - [Project summaries and engineering notes](PROJECT_SUMMARIES.md)
-- [Demo and recording guide](DEMO_AND_RECORDING_GUIDE.md)
 
 ## Project links
 

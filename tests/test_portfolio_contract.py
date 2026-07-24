@@ -17,7 +17,6 @@ def test_required_project_documents_exist() -> None:
         "README.md",
         "CASE_STUDY.md",
         "ARCHITECTURE_AND_DATA_FLOW.md",
-        "DEMO_AND_RECORDING_GUIDE.md",
         "PROJECT_SUMMARIES.md",
     }
     assert required == {
@@ -52,13 +51,8 @@ def test_architecture_document_contains_visuals() -> None:
     assert "Analytical data flow" in text
 
 
-def test_demo_and_project_summaries_are_complete() -> None:
-    demo = read("DEMO_AND_RECORDING_GUIDE.md")
+def test_project_summaries_are_complete() -> None:
     summaries = read("PROJECT_SUMMARIES.md")
-
-    assert "30-second opening" in demo
-    assert "Walkthrough sequence" in demo
-    assert "Recording checklist" in demo
 
     required = (
         "Contribution highlights",
