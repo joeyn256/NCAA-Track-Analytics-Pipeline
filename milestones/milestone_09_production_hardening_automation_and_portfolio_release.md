@@ -240,7 +240,7 @@ Public project documentation now includes:
 - 30-second and two-minute project explanations;
 - engineering examples covering identity resolution, event fairness, and
   production deployment;
-- a safe screenshot capture guide with three required application views.
+- two reviewed application screenshots showing rankings and program trends.
 
 All written claims preserve the frozen project metrics and explicitly avoid
 causal, traffic, adoption, revenue, or accuracy claims that the evidence does

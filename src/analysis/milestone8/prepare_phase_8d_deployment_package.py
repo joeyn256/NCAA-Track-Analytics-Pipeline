@@ -42,7 +42,7 @@ RELEASE_NOTES_PATH: Final = (
 PUBLISH_SCRIPT_PATH: Final = (
     GITHUB_DIR / "publish_public_deployment_v1.sh"
 )
-DEPLOYMENT_GUIDE_PATH: Final = (
+DEPLOYMENT_DOC_PATH: Final = (
     DEPLOYMENT_DIR / "STREAMLIT_COMMUNITY_CLOUD.md"
 )
 DEPLOYMENT_DESCRIPTOR_PATH: Final = (
@@ -331,7 +331,7 @@ echo "{release_url}"
         | stat.S_IXOTH
     )
 
-    DEPLOYMENT_GUIDE_PATH.write_text(
+    DEPLOYMENT_DOC_PATH.write_text(
         f"""# Streamlit Community Cloud deployment
 
 ## Deployment target
@@ -448,7 +448,7 @@ cached DuckDB on subsequent runs.
     print(f"Created: {SECRETS_EXAMPLE_PATH.relative_to(ROOT)}")
     print(f"Created: {RELEASE_NOTES_PATH.relative_to(ROOT)}")
     print(f"Created: {PUBLISH_SCRIPT_PATH.relative_to(ROOT)}")
-    print(f"Created: {DEPLOYMENT_GUIDE_PATH.relative_to(ROOT)}")
+    print(f"Created: {DEPLOYMENT_DOC_PATH.relative_to(ROOT)}")
     print(f"Created: {DEPLOYMENT_DESCRIPTOR_PATH.relative_to(ROOT)}")
     print()
     print(

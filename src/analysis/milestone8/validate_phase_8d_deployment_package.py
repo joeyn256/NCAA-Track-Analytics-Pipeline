@@ -37,7 +37,7 @@ PUBLISH_SCRIPT_PATH: Final = (
     ROOT
     / "deployment/github/publish_public_deployment_v1.sh"
 )
-DEPLOYMENT_GUIDE_PATH: Final = (
+DEPLOYMENT_DOC_PATH: Final = (
     ROOT / "deployment/STREAMLIT_COMMUNITY_CLOUD.md"
 )
 DESCRIPTOR_PATH: Final = (
@@ -88,7 +88,7 @@ def main() -> None:
         SECRETS_EXAMPLE_PATH,
         RELEASE_NOTES_PATH,
         PUBLISH_SCRIPT_PATH,
-        DEPLOYMENT_GUIDE_PATH,
+        DEPLOYMENT_DOC_PATH,
         DESCRIPTOR_PATH,
         GITIGNORE_PATH,
     )

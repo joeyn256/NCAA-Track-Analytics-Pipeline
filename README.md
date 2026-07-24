@@ -453,7 +453,7 @@ Detailed methodology and audit evidence are available in the milestone files:
 - [Milestone 7 — Program Trends, Comparisons, and Specialized Rankings](milestones/milestone_07_program_trends_and_specialized_rankings.md)
 - [Milestone 8 — Public Deployment and Visitor Experience](milestones/milestone_08_public_deployment_and_user_experience.md)
 - [Milestone 9 — Production Hardening, Automation, and Portfolio Release](milestones/milestone_09_production_hardening_automation_and_portfolio_release.md)
-- [Streamlit Community Cloud deployment guide](deployment/STREAMLIT_COMMUNITY_CLOUD.md)
+- [Streamlit Community Cloud deployment instructions](deployment/STREAMLIT_COMMUNITY_CLOUD.md)
 
 ## Project Status
 
